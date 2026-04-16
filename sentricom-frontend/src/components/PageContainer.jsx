@@ -1,3 +1,4 @@
+// PageContainer component that provides a consistent layout for different pages in the app
 export default function PageContainer({ title, subtitle, children }) {
   return (
     <div className="page-container">
