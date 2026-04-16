@@ -1,8 +1,11 @@
+// Import React hook for state
 import { useState } from "react";
 import PageContainer from "../components/PageContainer";
 import Card from "../components/Card";
 
+// Profile page for user details and settings
 export default function ProfilePage() {
+  // Profile form data
   const [profile, setProfile] = useState({
     fullName: "John Doe",
     email: "john.doe@sentricom.com",
@@ -15,6 +18,7 @@ export default function ProfilePage() {
     systemNotifications: true,
   });
 
+  // Update form fields and checkboxes
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
 
@@ -24,6 +28,7 @@ export default function ProfilePage() {
     }));
   };
 
+  // Save profile changes
   const handleSave = (event) => {
     event.preventDefault();
     alert("Profile changes saved locally. Backend connection can be added later.");
@@ -34,11 +39,13 @@ export default function ProfilePage() {
       title="Profile"
       subtitle="Manage your account details and notification preferences"
     >
+      {/* Top section */}
       <div className="profile-grid">
         <Card title="User Overview">
           <div className="profile-summary">
             <div className="profile-avatar">AM</div>
 
+            {/* Basic user info */}
             <div className="profile-summary-text">
               <h3>{profile.fullName}</h3>
               <p>{profile.role}</p>
@@ -46,6 +53,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          {/* Extra profile details */}
           <div className="profile-meta">
             <div className="profile-meta-item">
               <span className="meta-label">Department</span>
@@ -76,6 +84,7 @@ export default function ProfilePage() {
               <span className="preview-value">Main Campus</span>
             </div>
 
+            {/* Future auth/settings note */}
             <div className="report-note">
               Security settings, password reset, and role permissions can be added later when authentication is connected.
             </div>
@@ -83,6 +92,7 @@ export default function ProfilePage() {
         </Card>
       </div>
 
+      {/* Bottom section */}
       <div className="profile-form-layout">
         <Card title="Edit Profile">
           <form className="report-form" onSubmit={handleSave}>
@@ -158,6 +168,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* Save button */}
             <button type="submit" className="primary-button">
               Save Changes
             </button>
@@ -166,6 +177,7 @@ export default function ProfilePage() {
 
         <Card title="Notification Preferences">
           <div className="settings-list">
+            {/* Email alerts toggle */}
             <label className="settings-item">
               <div>
                 <span className="settings-title">Email Alerts</span>
@@ -181,6 +193,7 @@ export default function ProfilePage() {
               />
             </label>
 
+            {/* SMS alerts toggle */}
             <label className="settings-item">
               <div>
                 <span className="settings-title">SMS Alerts</span>
@@ -196,6 +209,7 @@ export default function ProfilePage() {
               />
             </label>
 
+            {/* In-app notifications toggle */}
             <label className="settings-item">
               <div>
                 <span className="settings-title">System Notifications</span>

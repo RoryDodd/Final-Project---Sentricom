@@ -1,17 +1,20 @@
+// React core
 import React from "react";
 
-// Import ReactDOM for rendering the app
+// Render app to DOM
 import ReactDOM from "react-dom/client";
 
-// Import BrowserRouter for handling routing in the app
+// Router for navigation
 import { BrowserRouter } from "react-router-dom";
 
-// Import the main App component and global styles
+// Main app + styles
 import App from "./App";
 import "./index.css";
 
+// Mount app to root element
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
+    {/* Enable routing */}
     <BrowserRouter>
       <App />
     </BrowserRouter>

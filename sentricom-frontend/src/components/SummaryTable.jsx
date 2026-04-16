@@ -1,23 +1,23 @@
-// SummaryTable component to display zone occupancy and status in a table format
+// Table showing zone status
 export default function SummaryTable() {
 
-  // function to get styles based on zone status
+  // Get style from status
   const getStatusStyle = (status) => {
-  switch (status) {
-    case "NORMAL":
-      return { background: "#4CAF50", color: "#fff" };
-    case "BUSY":
-      return { background: "#FFC107", color: "#000" };
-    case "CROWDED":
-      return { background: "#FF9800", color: "#fff" };
-    case "MAX_CAPACITY":
-      return { background: "#F44336", color: "#fff" };
-    default:
-      return { background: "#ccc", color: "#000" };
-  }
-};
+    switch (status) {
+      case "NORMAL":
+        return { background: "#4CAF50", color: "#fff" };
+      case "BUSY":
+        return { background: "#FFC107", color: "#000" };
+      case "CROWDED":
+        return { background: "#FF9800", color: "#fff" };
+      case "MAX_CAPACITY":
+        return { background: "#F44336", color: "#fff" };
+      default:
+        return { background: "#ccc", color: "#000" };
+    }
+  };
+
   return (
-    // container for the summary table
     <div
       style={{
         background: "#fff",
@@ -29,7 +29,7 @@ export default function SummaryTable() {
     >
       <h3>Zone Summary</h3>
 
-      // table to display zone occupancy and status
+      {/* Table */}
       <table
         style={{
           width: "100%",
@@ -37,67 +37,49 @@ export default function SummaryTable() {
           marginTop: "10px",
         }}
       >
-        // table header
+        {/* Header */}
         <thead>
           <tr>
-            <th
-              style={{
-                textAlign: "left",
-                padding: "8px",
-                borderBottom: "1px solid #ddd",
-              }}
-            >
+            <th style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>
               Zone
             </th>
-            <th
-              style={{
-                textAlign: "left",
-                padding: "8px",
-                borderBottom: "1px solid #ddd",
-              }}
-            >
+            <th style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>
               Occupancy
             </th>
-            <th
-              style={{
-                textAlign: "left",
-                padding: "8px",
-                borderBottom: "1px solid #ddd",
-              }}
-            >
+            <th style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>
               Status
             </th>
           </tr>
         </thead>
 
-        // table body with static data for zones, occupancy, and status      
+        {/* Rows */}
         <tbody>
-  {[
-    // static data for zones, occupancy, and status, Replace with dynamic data from API later.
-    { zone: "Zone 1", occupancy: 20, status: "NORMAL" },
-    { zone: "Zone 2", occupancy: 35, status: "BUSY" },
-    { zone: "Zone 3", occupancy: 50, status: "CROWDED" },
-  ].map((z, index) => (
-    <tr key={index}>
-      <td style={{ padding: "8px" }}>{z.zone}</td>
-      <td style={{ padding: "8px" }}>{z.occupancy}</td>
+          {[
+            // Static data (replace with API later)
+            { zone: "Zone 1", occupancy: 20, status: "NORMAL" },
+            { zone: "Zone 2", occupancy: 35, status: "BUSY" },
+            { zone: "Zone 3", occupancy: 50, status: "CROWDED" },
+          ].map((z, index) => (
+            <tr key={index}>
+              <td style={{ padding: "8px" }}>{z.zone}</td>
+              <td style={{ padding: "8px" }}>{z.occupancy}</td>
 
-      <td style={{ padding: "8px" }}>
-        <span
-          style={{
-            padding: "4px 10px",
-            borderRadius: "8px",
-            fontSize: "12px",
-            fontWeight: "bold",
-            ...getStatusStyle(z.status),
-          }}
-        >
-          {z.status}
-        </span>
-      </td>
-    </tr>
-  ))}
-</tbody>
+              <td style={{ padding: "8px" }}>
+                <span
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    ...getStatusStyle(z.status),
+                  }}
+                >
+                  {z.status}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </div>
   );

@@ -1,16 +1,18 @@
-// AlertPanel component that displays important alerts related to zone overcrowding and density
+// Alert panel showing current warnings
 export default function AlertPanel() {
-   const alerts = [
+
+  // Static alert messages (replace with real data later)
+  const alerts = [
     "Zone 5 overcrowded",
-     "Zone 2 increasing density",
-    ];
-    
-  // Render the alert panel with the list of alerts
-   return (
-  <div className="alert-panel">
-    {alerts.map((alert, index) => (
-      <p key={index}>“{alert}”</p>
-    ))}
-  </div>
-);
- }
+    "Zone 2 increasing density",
+  ];
+
+  return (
+    <div className="alert-panel">
+      {/* Render each alert */}
+      {alerts.map((alert, index) => (
+        <p key={index}>{alert}</p>
+      ))}
+    </div>
+  );
+}

@@ -1,8 +1,13 @@
+// Import React hook for managing component state
 import { useState } from "react";
+
+// Import reusable layout and card components
 import PageContainer from "../components/PageContainer";
 import Card from "../components/Card";
 
+// GenerateReportPage allows users to configure and preview report options
 export default function GenerateReportPage() {
+  // Store form input values for report generation
   const [formData, setFormData] = useState({
     startDate: "",
     endDate: "",
@@ -11,6 +16,7 @@ export default function GenerateReportPage() {
     format: "pdf",
   });
 
+  // Update form state when any input field changes
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -20,21 +26,29 @@ export default function GenerateReportPage() {
     }));
   };
 
+  // Handle form submission
   const handleGenerate = (event) => {
-    event.preventDefault();
+    event.preventDefault(); // Prevent page reload on submit
 
+    // Placeholder logic until backend integration is added
     console.log("Generate report with:", formData);
     alert("Report generation will be connected to the backend later.");
   };
 
   return (
+    // Page layout wrapper with heading and subtitle
     <PageContainer
       title="Generate Report"
       subtitle="Create downloadable occupancy and incident reports by date, zone, and format"
     >
+      {/* Two-column layout: form settings + live preview */}
       <div className="report-grid">
+
+        {/* Report settings form */}
         <Card title="Report Settings">
           <form className="report-form" onSubmit={handleGenerate}>
+
+            {/* Date range inputs */}
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="startDate">Start Date</label>
@@ -59,6 +73,7 @@ export default function GenerateReportPage() {
               </div>
             </div>
 
+            {/* Zone selection */}
             <div className="form-group">
               <label htmlFor="zone">Zone</label>
               <select
@@ -76,6 +91,7 @@ export default function GenerateReportPage() {
               </select>
             </div>
 
+            {/* Report type selection */}
             <div className="form-group">
               <label htmlFor="reportType">Report Type</label>
               <select
@@ -91,6 +107,7 @@ export default function GenerateReportPage() {
               </select>
             </div>
 
+            {/* Output format selection */}
             <div className="form-group">
               <label htmlFor="format">Output Format</label>
               <select
@@ -105,14 +122,17 @@ export default function GenerateReportPage() {
               </select>
             </div>
 
+            {/* Submit button */}
             <button type="submit" className="primary-button">
               Generate Report
             </button>
           </form>
         </Card>
 
+        {/* Live preview of selected report settings */}
         <Card title="Report Preview">
           <div className="report-preview">
+
             <div className="preview-item">
               <span className="preview-label">Selected Zone</span>
               <span className="preview-value">{formData.zone}</span>
@@ -137,11 +157,13 @@ export default function GenerateReportPage() {
               </span>
             </div>
 
+            {/* Placeholder note for future backend preview functionality */}
             <div className="report-note">
               This panel can later show a backend-generated summary, estimated file size, or a mini preview before download.
             </div>
           </div>
         </Card>
+
       </div>
     </PageContainer>
   );
