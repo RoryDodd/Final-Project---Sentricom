@@ -1,4 +1,6 @@
+// Heatmap component to visualize zone activity levels
 export default function Heatmap() {
+  // static data for zones and their activity levels
   const zones = [
     { id: 1, level: "low" },
     { id: 2, level: "medium" },
@@ -8,6 +10,7 @@ export default function Heatmap() {
     { id: 6, level: "high" },
   ];
 
+  // function to get color based on activity level
   const getColor = (level) => {
     if (level === "low") return "#4CAF50";      // green
     if (level === "medium") return "#FFC107";   // yellow
@@ -16,6 +19,7 @@ export default function Heatmap() {
   };
 
   return (
+    // container for the heatmap
     <div
       style={{
         background: "#fff",
@@ -36,13 +40,14 @@ export default function Heatmap() {
           marginTop: "15px",
         }}
       >
+        // loop through zones and display each zone with its corresponding color
         {zones.map((z) => (
           <div
-            key={z.id}
+            key={z.id} // unique key for each zone
             style={{
               height: "80px",
               borderRadius: "10px",
-              background: getColor(z.level),
+              background: getColor(z.level), // set background color based on activity level
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -50,6 +55,7 @@ export default function Heatmap() {
               fontWeight: "bold",
             }}
           >
+            // display zone id in the center of the box
             Zone {z.id}
             
           </div>

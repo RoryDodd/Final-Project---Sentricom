@@ -1,4 +1,7 @@
+// SummaryTable component to display zone occupancy and status in a table format
 export default function SummaryTable() {
+
+  // function to get styles based on zone status
   const getStatusStyle = (status) => {
   switch (status) {
     case "NORMAL":
@@ -14,6 +17,7 @@ export default function SummaryTable() {
   }
 };
   return (
+    // container for the summary table
     <div
       style={{
         background: "#fff",
@@ -25,6 +29,7 @@ export default function SummaryTable() {
     >
       <h3>Zone Summary</h3>
 
+      // table to display zone occupancy and status
       <table
         style={{
           width: "100%",
@@ -32,6 +37,7 @@ export default function SummaryTable() {
           marginTop: "10px",
         }}
       >
+        // table header
         <thead>
           <tr>
             <th
@@ -64,8 +70,10 @@ export default function SummaryTable() {
           </tr>
         </thead>
 
+        // table body with static data for zones, occupancy, and status      
         <tbody>
   {[
+    // static data for zones, occupancy, and status, Replace with dynamic data from API later.
     { zone: "Zone 1", occupancy: 20, status: "NORMAL" },
     { zone: "Zone 2", occupancy: 35, status: "BUSY" },
     { zone: "Zone 3", occupancy: 50, status: "CROWDED" },
