@@ -1,10 +1,13 @@
-from fastapi import APIRouter
+# app/api/v1/routes/health.py
+
+from fastapi import APIRouter, Depends
+from app.dependencies.auth import require_api_key
 from pathlib import Path
 
 router = APIRouter()
 
 @router.get("/health", tags=["Health"])
-def health_check():
+def health_check(auth=Depends(require_api_key)):
     """
     Health check endpoint to verify that the API is running.
     """
