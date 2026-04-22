@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 from app.api.v1.routes import health
+from app.api.v1.routes import zones
 
 app = FastAPI()
 
@@ -12,4 +13,5 @@ def read_root():
 
 # Health check
 app.include_router(health.router, prefix="/api/v1")
-
+# Zones
+app.include_router(zones.router, prefix="/api/v1")
