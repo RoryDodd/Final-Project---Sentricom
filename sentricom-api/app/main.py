@@ -3,8 +3,24 @@
 from fastapi import FastAPI
 from app.api.v1.routes import health
 from app.api.v1.routes import zones
+from fastapi.middleware.cors import CORSMiddleware
+import os
 
 app = FastAPI()
+
+# configure allowed origins via env var, fallback to local + deployed frontend
+origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,https://afert-umber.vercel.app")
+origins = [o.strip() for o in origins.split(",") if o.strip()]
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    #allow_origins=["*"],
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 # Default root welcome 
 @app.get("/")
