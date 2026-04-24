@@ -1,21 +1,18 @@
 // Table showing zone status
-export default function SummaryTable() {
-
-  // Get style from status
+export default function SummaryTable({ zones = [] }) {
   const getStatusStyle = (status) => {
     switch (status) {
-      case "NORMAL":
+      case "LOW":
         return { background: "#4CAF50", color: "#fff" };
-      case "BUSY":
+      case "MEDIUM":
         return { background: "#FFC107", color: "#000" };
-      case "CROWDED":
-        return { background: "#FF9800", color: "#fff" };
-      case "MAX_CAPACITY":
+      case "HIGH":
         return { background: "#F44336", color: "#fff" };
       default:
         return { background: "#ccc", color: "#000" };
     }
   };
+
 
   return (
     <div
@@ -39,30 +36,29 @@ export default function SummaryTable() {
       >
         {/* Header */}
         <thead>
-          <tr>
-            <th style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>
-              Zone
-            </th>
-            <th style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>
-              Occupancy
-            </th>
-            <th style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>
-              Status
-            </th>
-          </tr>
-        </thead>
+  <tr>
+    <th style={{ padding: "8px", borderBottom: "1px solid #ddd", textAlign: "left" }}>
+      Zone
+    </th>
+    <th style={{ padding: "8px", borderBottom: "1px solid #ddd", textAlign: "left" }}>
+      Occupancy
+    </th>
+    <th style={{ padding: "8px", borderBottom: "1px solid #ddd", textAlign: "left" }}>
+      Capacity
+    </th>
+    <th style={{ padding: "8px", borderBottom: "1px solid #ddd", textAlign: "left" }}>
+      Status
+    </th>
+  </tr>
+</thead>
 
         {/* Rows */}
-        <tbody>
-          {[
-            // Static data (replace with API later)
-            { zone: "Zone 1", occupancy: 20, status: "NORMAL" },
-            { zone: "Zone 2", occupancy: 35, status: "BUSY" },
-            { zone: "Zone 3", occupancy: 50, status: "CROWDED" },
-          ].map((z, index) => (
-            <tr key={index}>
-              <td style={{ padding: "8px" }}>{z.zone}</td>
-              <td style={{ padding: "8px" }}>{z.occupancy}</td>
+         <tbody>
+          {zones.map((zone) => (
+            <tr key={zone.id}>
+              <td style={{ padding: "8px" }}>{zone.zoneName}</td>
+              <td style={{ padding: "8px" }}>{zone.count}</td>
+              <td style={{ padding: "8px" }}>{zone.capacity}</td>
 
               <td style={{ padding: "8px" }}>
                 <span
@@ -71,10 +67,10 @@ export default function SummaryTable() {
                     borderRadius: "8px",
                     fontSize: "12px",
                     fontWeight: "bold",
-                    ...getStatusStyle(z.status),
+                    ...getStatusStyle(zone.status),
                   }}
                 >
-                  {z.status}
+                  {zone.status}
                 </span>
               </td>
             </tr>

@@ -1,18 +1,21 @@
 // Alert panel showing current warnings
-export default function AlertPanel() {
-
-  // Static alert messages (replace with real data later)
-  const alerts = [
-    "Zone 5 overcrowded",
-    "Zone 2 increasing density",
-  ];
+export default function AlertPanel({ zones = [] }) {
+  // Filter zones that need attention
+  const alerts = zones.filter(
+    (zone) => zone.status === "MEDIUM" || zone.status === "HIGH"
+  );
 
   return (
     <div className="alert-panel">
-      {/* Render each alert */}
-      {alerts.map((alert, index) => (
-        <p key={index}>{alert}</p>
-      ))}
+      {alerts.length > 0 ? (
+        alerts.map((zone) => (
+          <p key={zone.id}>
+            {zone.zoneName} {zone.status === "HIGH" ? "overcrowded" : "increasing density"}
+          </p>
+        ))
+      ) : (
+        <p>No active warnings</p>
+      )}
     </div>
   );
 }
