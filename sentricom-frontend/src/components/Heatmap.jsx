@@ -1,21 +1,10 @@
 // Heatmap for zone activity
-export default function Heatmap() {
-
-  // Zone data
-  const zones = [
-    { id: 1, level: "low" },
-    { id: 2, level: "medium" },
-    { id: 3, level: "high" },
-    { id: 4, level: "medium" },
-    { id: 5, level: "low" },
-    { id: 6, level: "high" },
-  ];
-
-  // Get color from level
-  const getColor = (level) => {
-    if (level === "low") return "#4CAF50";
-    if (level === "medium") return "#FFC107";
-    if (level === "high") return "#F44336";
+export default function Heatmap({ zones = [] }) {
+  // Get color from risk status
+  const getColor = (status) => {
+    if (status === "LOW") return "#4CAF50";
+    if (status === "MEDIUM") return "#FFC107";
+    if (status === "HIGH") return "#F44336";
     return "#ccc";
   };
 
@@ -31,7 +20,6 @@ export default function Heatmap() {
     >
       <h3>Zone Heatmap</h3>
 
-      {/* Grid layout */}
       <div
         style={{
           display: "grid",
@@ -40,31 +28,39 @@ export default function Heatmap() {
           marginTop: "15px",
         }}
       >
-        {/* Render zones */}
-        {zones.map((z) => (
+        {zones.map((zone) => (
           <div
-            key={z.id}
+            key={zone.id}
             style={{
-              height: "80px",
+              minHeight: "80px",
               borderRadius: "10px",
-              background: getColor(z.level),
+              background: getColor(zone.status),
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              color: "#fff",
+              color: zone.status === "MEDIUM" ? "#000" : "#fff",
               fontWeight: "bold",
+              textAlign: "center",
             }}
           >
-            {/* Zone label */}
-            Zone {z.id}
+            <div>{zone.zoneName}</div>
+            <small>
+              {zone.count} / {zone.capacity}
+            </small>
           </div>
         ))}
+      </div>
 
-        {/* Legend */}
-        <div style={{ marginTop: "15px", fontSize: "14px" }}>
-          <div><span style={{ color: "#4CAF50" }}>■</span> Low</div>
-          <div><span style={{ color: "#FFC107" }}>■</span> Medium</div>
-          <div><span style={{ color: "#F44336" }}>■</span> High</div>
+      <div style={{ marginTop: "15px", fontSize: "14px" }}>
+        <div>
+          <span style={{ color: "#4CAF50" }}>■</span> Low
+        </div>
+        <div>
+          <span style={{ color: "#FFC107" }}>■</span> Medium
+        </div>
+        <div>
+          <span style={{ color: "#F44336" }}>■</span> High
         </div>
       </div>
     </div>
