@@ -1,7 +1,7 @@
 # app/api/v1/routes/health.py
 
 from fastapi import APIRouter, Depends
-from app.dependencies.auth import require_api_key
+from app.dependencies.auth_dep import require_api_key
 from pathlib import Path
 
 router = APIRouter()
