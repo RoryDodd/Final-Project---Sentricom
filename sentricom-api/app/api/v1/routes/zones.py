@@ -1,7 +1,7 @@
 # app/api/v1/routes/zones.py
 
 from fastapi import APIRouter, Depends, HTTPException
-from app.dependencies.auth import require_api_key
+from app.dependencies.auth_dep import require_api_key
 from app.schemas.zones import ZoneLatest
 
 router = APIRouter()
