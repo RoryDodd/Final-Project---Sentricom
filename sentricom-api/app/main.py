@@ -31,3 +31,8 @@ def read_root():
 app.include_router(health.router, prefix="/api/v1")
 # Zones
 app.include_router(zones.router, prefix="/api/v1")
+
+# DB initialisation if it doesn't exist
+if not os.path.exists("/tmp/sentricom.db"):
+    from app.db.init_db import init_db
+    init_db()
