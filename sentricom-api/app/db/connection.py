@@ -60,3 +60,22 @@ def fetch_all(query: str, params: tuple = ()):
         rows = cursor.fetchall()
         return [dict(r) for r in rows] 
     
+# Execute helper - no return
+def execute(query: str, params: tuple = ()):
+    """
+    Execute a non-SELECT query (INSERT, UPDATE, DELETE) without return
+    """
+
+    with db_cursor() as cursor:
+        cursor.execute(query, params)
+
+# Execute helper - with return
+def execute_and_return(query: str, params: tuple = ()):
+    """
+    Execute an INSERT query and return the id of last inserted row
+    """
+    with db_cursor() as cursor:
+        cursor.execute(query, params)
+        return cursor.lastrowid
+    
+
