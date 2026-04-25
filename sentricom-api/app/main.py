@@ -6,14 +6,6 @@ from app.api.v1.routes import zones
 from app.api.v1.routes import auth
 from fastapi.middleware.cors import CORSMiddleware
 import os
-import sys
-print("app.api.v1.routes module file:", sys.modules.get("app.api.v1.routes").__file__)
-print("app.api.v1.routes.auth in sys.modules:", "app.api.v1.routes.auth" in sys.modules)
-if "app.api.v1.routes.auth" in sys.modules:
-    print("auth router file:", sys.modules["app.api.v1.routes.auth"].__file__)
-print("app.dependencies.auth_dep in sys.modules:", "app.dependencies.auth_dep" in sys.modules)
-if "app.dependencies.auth_dep" in sys.modules:
-    print("auth_dep file:", sys.modules["app.dependencies.auth_dep"].__file__)
 
 app = FastAPI()
 
@@ -44,8 +36,8 @@ app.include_router(zones.router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1/auth")
 
 # DEBUG
-for r in app.routes:
-    print(f"ROUTE: {r.name} -> {r.path} [{','.join(sorted(r.methods))}]")
+#for r in app.routes:
+    #print(f"ROUTE: {r.name} -> {r.path} [{','.join(sorted(r.methods))}]")
 
 # DB initialisation if it doesn't exist
 if not os.path.exists("/tmp/sentricom.db"):
