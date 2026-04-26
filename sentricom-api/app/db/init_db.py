@@ -12,7 +12,9 @@ def init_db():
     execute("""
         CREATE TABLE IF NOT EXISTS zones (
             zone_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            zone_name TEXT NOT NULL
+            zone_name TEXT NOT NULL,
+            capacity INTEGER DEFAULT 0,
+            risk_status TEXT DEFAULT 'LOW RISK'
         );
     """)
 
