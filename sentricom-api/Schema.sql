@@ -6,6 +6,8 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE zones (
     zone_id INTEGER PRIMARY KEY AUTOINCREMENT,
     zone_name TEXT NOT NULL
+    capacity INTEGER DEFAULT 0,
+    risk_status TEXT DEFAULT 'LOW RISK'
 );
 
 -- 2. OCCUPANCY READINGS
@@ -130,12 +132,13 @@ CREATE TABLE sessions (
 
 -- INITIAL DATA
 
-INSERT INTO zones (zone_name) VALUES ('Main Lobby');
-INSERT INTO zones (zone_name) VALUES ('Level 1 - North Wing');
-INSERT INTO zones (zone_name) VALUES ('Level 1 - South Wing');
-INSERT INTO zones (zone_name) VALUES ('Level 2 - Offices');
-INSERT INTO zones (zone_name) VALUES ('Emergency Stairwell A');
-INSERT INTO zones (zone_name) VALUES ('Emergency Stairwell B');
+INSERT INTO zones (zone_name, capacity, risk_status) VALUES 
+('Main Lobby', 100, 'LOW RISK'),
+('Level 1 - North Wing', 75, 'LOW RISK'),
+('Level 1 - South Wing', 75, 'LOW RISK'),
+('Level 2 - Offices', 50, 'LOW RISK'),
+('Emergency Stairwell A', 30, 'LOW RISK'),
+('Emergency Stairwell B', 30, 'LOW RISK');
 
 INSERT INTO users (username, email, password_hash, full_name, role) 
 VALUES ('admin', 'admin@sentricom.com', 'admin123', 'System Administrator', 'admin');
