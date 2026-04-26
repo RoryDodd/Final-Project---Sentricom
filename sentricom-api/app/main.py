@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 from app.api.v1.routes import health
 from app.api.v1.routes import zones
+from app.api.v1.routes import auth
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
@@ -31,3 +32,14 @@ def read_root():
 app.include_router(health.router, prefix="/api/v1")
 # Zones
 app.include_router(zones.router, prefix="/api/v1")
+# Auth
+app.include_router(auth.router, prefix="/api/v1")
+
+# DEBUG
+#for r in app.routes:
+    #print(f"ROUTE: {r.name} -> {r.path} [{','.join(sorted(r.methods))}]")
+
+# DB initialisation if it doesn't exist
+if not os.path.exists("/tmp/sentricom.db"):
+    from app.db.init_db import init_db
+    init_db()

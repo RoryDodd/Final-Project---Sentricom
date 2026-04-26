@@ -12,4 +12,5 @@ async def require_api_key(x_api_key: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid or revoked API key")
     
     #return x_api_key #only needed if we would need to know which client is requesting.
+
     return True
