@@ -4,6 +4,7 @@ import secrets
 import bcrypt
 from datetime import datetime
 from typing import Optional
+from app.db.connection import fetch_one, fetch_all, execute, execute_and_return
 
 """API Key Service for managing API keys for authentication and access control"""
 
@@ -119,6 +120,19 @@ class APIKeyService:
             """,
             ()
         )
+    
+    # ----- Get by plaintext ----- #
+    def get_by_plaintext(self, key: str) -> Optional[dict]:
+        """
+        Compare the plaintext key provided to the match aginst key rows by comparing hash.
+        Returns row dict data or none.
+        """
+        rows = fetch_all("SELECT * FROM keys WHERE revoked = 0", ())
+        for r in rows:
+            stored_hash = r["key_hash"]
+            if bcrypt.checkpw(key.encode(), stored_hash.encode()):
+                return r
+        return None
     
 # Singleton instance
 api_key_service = APIKeyService()

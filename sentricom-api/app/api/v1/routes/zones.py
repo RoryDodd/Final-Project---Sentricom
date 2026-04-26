@@ -2,7 +2,9 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies.auth_dep import require_api_key
+from app.dependencies.session_dep import require_session
 from app.schemas.zones import ZoneLatest
+
 
 router = APIRouter()
 
@@ -59,7 +61,7 @@ ZONES = [
     }
 ]
 
-@router.get("/zones/latest", response_model=list[ZoneLatest])
+@router.get("/zones/latest", response_model=list[ZoneLatest], dependencies=[Depends(require_session)])
 #def get_all_latest_zones(auth=Depends(require_api_key)):
 def get_all_latest_zones():
     """
@@ -67,7 +69,7 @@ def get_all_latest_zones():
     """
     return ZONES
 
-@router.get("/zones/latest/{zone_id}", response_model=ZoneLatest)
+@router.get("/zones/latest/{zone_id}", response_model=ZoneLatest, dependencies=[Depends(require_session)])
 #def get_latest_zone(zone_id: int, auth=Depends(require_api_key)):
 def get_latest_zone(zone_id: int):
     """Return the latest data for a single zone by ID"""

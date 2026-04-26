@@ -51,3 +51,25 @@ class SessionService:
             expires_at = datetime.fromisoformat(rec["expires_at"])
             if expires_at <= now:
                 return None
+
+        # Python syntax here for checking null first before comparing to value (silly pthon way of doing isnull etc)
+        if rec["ip_address"] and rec["ip_address"] != ip_address:
+            return None
+        
+        if rec["user_agemt"] and rec["user_agent"] != user_agent:
+            return None
+        
+        # no last used time for session token, api key already stores last used.
+
+        return rec
+    
+    def revoke_session(self, session_token: str) -> bool:
+        execute("""
+            UPDATE sessions
+            SET active = 0
+            WHERE session_token = ?
+            """, 
+            (session_token,)
+        )
+        
+session_service = SessionService()
