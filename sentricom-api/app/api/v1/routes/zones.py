@@ -35,7 +35,7 @@ def get_all_latest_zones():
             ON r.reading_id = (
                 SELECT reading_id
                 FROM occupancy_readings r2
-                WHERE zone_id = z.zone_id
+                WHERE r2.zone_id = z.zone_id
                 ORDER BY timestamp DESC
                 LIMIT 1
             )
@@ -76,7 +76,7 @@ def get_latest_zone(zone_id: int):
             ON r.reading_id = (
                 SELECT reading_id
                 FROM occupancy_readings r2
-                WHERE zone_id = z.zone_id
+                WHERE r2.zone_id = z.zone_id
                 ORDER BY timestamp DESC
                 LIMIT 1
             )
@@ -152,7 +152,7 @@ def upsert_zone_reading(zone_id: int, payload: Dict[str, Any]):
     # 3) Insert occupancy reading
     execute(
         """
-        INSERT INTO occupancy_readings (zone_id, site_id, noisy_count, confidence, zone_sate, timestamp)
+        INSERT INTO occupancy_readings (zone_id, site_id, noisy_count, confidence, zone_state, timestamp)
         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         """,
         (
@@ -196,7 +196,7 @@ def upsert_multiple_zone_readings(payload: List[Dict[str, Any]]):
         
         zone_id = record["zone_id"]
         zone_name = record.get("zone_name")
-        cpacity = record.get("capacity")
+        capacity = record.get("capacity")
         risk_status = record.get("risk_status")
         site_id = record.get("site_id", 1)
 

@@ -56,7 +56,7 @@ class SessionService:
         if rec["ip_address"] and rec["ip_address"] != ip_address:
             return None
         
-        if rec["user_agemt"] and rec["user_agent"] != user_agent:
+        if rec["user_agent"] and rec["user_agent"] != user_agent:
             return None
         
         # no last used time for session token, api key already stores last used.

@@ -13,5 +13,4 @@ class ZoneLatest(BaseModel):
     confidence: Optional[float]
     zone_state: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}

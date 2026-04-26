@@ -166,6 +166,22 @@ def init_db():
     """)
     '''
 
+    # INITIAL DATA
+    execute("""
+        INSERT INTO zones (zone_name, capacity, risk_status) VALUES 
+        ('Main Lobby', 100, 'LOW RISK'),
+        ('Level 1 - North Wing', 75, 'LOW RISK'),
+        ('Level 1 - South Wing', 75, 'LOW RISK'),
+        ('Level 2 - Offices', 50, 'LOW RISK'),
+        ('Emergency Stairwell A', 30, 'LOW RISK'),
+        ('Emergency Stairwell B', 30, 'LOW RISK');  
+    """)
+
+    execute("""
+        INSERT INTO users (username, email, password_hash, full_name, role) 
+        VALUES ('admin', 'admin@sentricom.com', 'admin123', 'System Administrator', 'admin');
+    """)
+
     print("Database creation executed successfully.")
 
     if __name__ == "__main__":
