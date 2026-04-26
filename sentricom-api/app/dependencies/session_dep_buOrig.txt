@@ -1,0 +1,55 @@
+# app/dependencises/session_dep.py
+
+import logging
+from typing import Optional
+from fastapi import Header, HTTPException, Request, Depends, status
+from app.services.session_service import SessionService
+
+logger = logging.getLogger("sentircom.session_dep")
+
+async def require_session(
+        x_session_token: str = Header(..., alias="X-Session-Token"),
+        user_agent: Optional[str] = Header(None, alias="User-Agent"),
+        request: Request = None,
+        #request: Optional[Request] = None
+        
+):
+    """
+    Dependency to require a valid session token.
+    Validates Token, IP and User Agent
+    """
+    ip_address = None
+
+    '''
+    if not x_session_token:
+        raise HTTPException(status_code=401, detail="X-Session-Token header missing")
+    
+    client_ip = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent", "")
+
+    session = session_service.validate_session(
+        session_token=x_session_token,
+        ip_address=client_ip or "",
+        user_agent=user_agent or "",
+    )
+
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
+    '''
+
+    try:
+        if request is not None and request.client is not None:
+            ip_address = request.client.host
+    except Exception:
+        ip_address = None
+
+    try:
+        session = session_service.validate_session(x_session_token, ip_address, user_agent)
+    except Exception as exc:
+        logger.exception("Error validating session token")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Session validation error")
+
+    if not session:
+        logger.warning("Invalid or expired session token; ip=%s, ua=%s", ip_address, user_agent)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired session token")
+    return session
