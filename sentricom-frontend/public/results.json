@@ -1,0 +1,26 @@
+[
+  {
+    "timestamp": "2026-04-23T11:00:04+00:00",
+    "zone_id": 1,
+    "zone_name": "Zone A",
+    "dp_count": 42,
+    "capacity": 100,
+    "risk_status": "low"
+  },
+  {
+    "timestamp": "2026-04-23T11:00:04+00:00",
+    "zone_id": 2,
+    "zone_name": "Zone B",
+    "dp_count": 58,
+    "capacity": 80,
+    "risk_status": "medium"
+  },
+  {
+    "timestamp": "2026-04-23T11:00:04+00:00",
+    "zone_id": 3,
+    "zone_name": "Tuckshop",
+    "dp_count": 76,
+    "capacity": 90,
+    "risk_status": "high"
+  }
+]
