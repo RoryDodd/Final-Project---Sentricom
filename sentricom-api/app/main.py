@@ -38,6 +38,10 @@ app.include_router(auth.router, prefix="/api/v1")
 # DEBUG
 #for r in app.routes:
     #print(f"ROUTE: {r.name} -> {r.path} [{','.join(sorted(r.methods))}]")
+# --- TEMPORARY: force-drop local dev DB ---
+db_path = "/tmp/sentricom.db"
+if os.path.exists(db_path):
+    os.remove(db_path)
 
 # DB initialisation if it doesn't exist
 if not os.path.exists("/tmp/sentricom.db"):
