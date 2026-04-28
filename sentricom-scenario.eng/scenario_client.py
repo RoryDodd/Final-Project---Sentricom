@@ -22,7 +22,7 @@ def main():
                 "scenario_id": state["scenario_id"],
                 "scenario_type": state["scenario_type"],
                 "timestamp": state["time"],
-                "zones": state["zones"],
+                "raw_counts": state["raw_counts"],
                 "time_elapsed": state["elapsed"],
                 "density": state["density"],  
                 "speed": state["speed"],
