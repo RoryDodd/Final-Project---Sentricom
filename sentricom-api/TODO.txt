@@ -1,0 +1,15 @@
+on paid vercel add cron job to keep the api from cold starting -- add to the following path as vercel.json
+/sentricom-api/
+    vercel.json
+    app/
+    ...
+	
+	
+{
+  "crons": [
+    {
+      "path": "/api/keep-warm",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}

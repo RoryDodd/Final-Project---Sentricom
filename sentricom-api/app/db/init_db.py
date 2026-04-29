@@ -8,10 +8,10 @@ def init_db():
     # Enable foreign key support
     execute("""PRAGMA foreign_keys = ON;""")
 
-    # 1. ZONES
+    # 1. ZONES - changed from master schema
     execute("""
         CREATE TABLE IF NOT EXISTS zones (
-            zone_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            zone_id INTEGER PRIMARY KEY,
             zone_name TEXT NOT NULL,
             capacity INTEGER DEFAULT 0,
             risk_status TEXT DEFAULT 'LOW RISK'
@@ -157,6 +157,23 @@ def init_db():
         );
     """)
 
+    # 12. LOGGING DATA - changed from master schema
+    # originally for viewing pipeline events in UI but will be extended.
+    execute("""
+        CREATE TABLE IF NOT EXISTS pipeline_event_log (
+            log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_type TEXT NOT NULL,
+            severity TEXT DEFAULT 'info',
+            reason TEXT,
+            batch_id TEXT,
+            zone_count INTEGER,
+            age_seconds REAL,
+            queue_depth INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    """)
+
+
     '''
     #
     execute("""
@@ -166,21 +183,29 @@ def init_db():
     """)
     '''
 
-    # INITIAL DATA
+    # INITIAL DATA - changed from master schema
     execute("""
-        INSERT INTO zones (zone_name, capacity, risk_status) VALUES 
-        ('Main Lobby', 100, 'LOW RISK'),
-        ('Level 1 - North Wing', 75, 'LOW RISK'),
-        ('Level 1 - South Wing', 75, 'LOW RISK'),
-        ('Level 2 - Offices', 50, 'LOW RISK'),
-        ('Emergency Stairwell A', 30, 'LOW RISK'),
-        ('Emergency Stairwell B', 30, 'LOW RISK');  
+        INSERT OR IGNORE INTO zones (zone_id,zone_name, capacity, risk_status) VALUES 
+        (1, 'Main Lobby', 100, 'LOW RISK'),
+        (2, 'Level 1 - North Wing', 75, 'LOW RISK'),
+        (3, 'Level 1 - South Wing', 75, 'LOW RISK'),
+        (4, 'Level 2 - Offices', 50, 'LOW RISK'),
+        (5, 'Emergency Stairwell A', 30, 'LOW RISK'),
+        (6, 'Emergency Stairwell B', 30, 'LOW RISK');  
+    """)
+
+    # admin, warden, viewer
+    execute("""
+        INSERT INTO users (username, email, password_hash, full_name, role) VALUES 
+            ('Admin', 'admin@sentricom.com', '$2b$12$fgq3oXjO9UrxVkyZlSqvZuhCzikiizQ4hHifWct94H4yUMzo9NtFO', 'System Administrator', 'admin'),
+            ('Warden', 'warden@sentricom.com', '$2b$12$9ZOEGomya7Y4gFw1WHgXjOFtK3I8GuKhlSvMeKO7eLZmttaznXp9W', 'System Warden', 'warden');
     """)
 
     execute("""
-        INSERT INTO users (username, email, password_hash, full_name, role) 
-        VALUES ('admin', 'admin@sentricom.com', 'admin123', 'System Administrator', 'admin');
+        INSERT INTO keys (key_hash, client_name, description, created_at, revoked, last_used) VALUES 
+            ('$2b$12$AgZNTBMNqFcmQ8SVqMLp6e7DopVbIDj9lcYa73xvudC055WeTggym', 'sentricom-client/1.0', 'Sentricom Client API Key', CURRENT_TIMESTAMP, 0, NULL);
     """)
+
 
     print("Database creation executed successfully.")
 

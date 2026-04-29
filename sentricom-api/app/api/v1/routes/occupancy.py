@@ -2,8 +2,9 @@
 
 import logging
 from typing import List
-from fastAPI import APIRouter, Depends, response, status
-from app.dependecies.auth_dep import require_api_key
+#from urllib import response
+from fastapi import APIRouter, Depends, Response, status
+from app.dependencies.auth_dep import require_api_key
 from app.schemas.occupancy import (
     RawOccupancyBatchEnvelope,
     RawOccupancyBatchResponse,
@@ -29,7 +30,7 @@ def put_raw_occupancy_testdata(payload: List[RawOccupancyRecord]):
     This endpoint provides a thin-slice demo bridge for full e2e pipeline testing and sim data.
     """
     if not payload:
-        logger.warning("raw_occupancy_invalid_payload" reason="empty_payload")
+        logger.warning("raw_occupancy_invalid_payload", reason="empty_payload")
         log_pipeline_event(
             event_type="invalid_payload",
             severity="warning",
@@ -49,7 +50,7 @@ def put_raw_occupancy_testdata(payload: List[RawOccupancyRecord]):
     dependencies=[Depends(require_api_key)],
     responses={204: {"description": "No raw occupancy batch available"}},
 )
-def get_next_raw_occupancy_batch():
+def get_next_raw_occupancy_batch(response: Response):
     """
     Return the oldest non-stale raw occupancy snapshot to the privacy engine
     

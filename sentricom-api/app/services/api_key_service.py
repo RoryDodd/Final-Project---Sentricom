@@ -2,7 +2,7 @@
 
 import secrets
 import bcrypt
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from app.db.connection import fetch_one, fetch_all, execute, execute_and_return
 
@@ -69,8 +69,8 @@ class APIKeyService:
             if bcrypt.checkpw(key.encode(), stored_hash.encode()):
                 # Update the last used record
                 execute(
-                    "UPDATE key SET last_used = ? WHERE key_id = ?",
-                    (datetime.now(datetime.timezone.utc), r["key_id"])
+                    "UPDATE keys SET last_used = ? WHERE key_id = ?",
+                    (datetime.now(timezone.utc), r["key_id"])
                 )
                 return r
         

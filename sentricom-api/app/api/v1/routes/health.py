@@ -6,6 +6,13 @@ from pathlib import Path
 
 router = APIRouter()
 
+# Keep warm
+@router.get("/remote-hello", tags=["Health"])
+def remote_hello():
+    return {"ok": True, "message": "Hello from Sentricom API!"}
+
+
+# Returns environmeant health
 @router.get("/health", tags=["Health"])
 def health_check(auth=Depends(require_api_key)):
     """
@@ -19,7 +26,8 @@ def health_check(auth=Depends(require_api_key)):
         "app/models",
         "app/schemas",
         "app/services",
-        "app/db"
+        "app/db",
+        "tmp/db",
     ]
 
     for d in required_dirs:
