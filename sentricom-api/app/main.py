@@ -42,9 +42,9 @@ app.include_router(auth.router, prefix="/api/v1")
 # --- TEMPORARY: force-drop local dev DB ---
 # TODO - build this into an admin-only endpoint for DB management, and remove hardcoded path
 '''
-db_path = "/tmp/sentricom.db"
-if os.path.exists(db_path):
-    os.remove(db_path)
+#db_path = "/tmp/sentricom.db"
+#if os.path.exists(db_path):
+#    os.remove(db_path)
 '''
 
 # DB initialisation if it doesn't exist
