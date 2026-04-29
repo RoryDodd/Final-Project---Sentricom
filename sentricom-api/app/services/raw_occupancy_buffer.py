@@ -5,7 +5,7 @@ import os
 import threading
 import uuid
 from collections import deque
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Deque, Dict, List, Optional, Tuple
 
 from app.schemas.occupancy import RawOccupancyRecord
@@ -24,20 +24,21 @@ class RawOccupancyBatch(object):
         self.zones = zones
         self.delivered = False
 
-        @property
-        def zone_count(self) -> int:
-            return len(self.zones)
+    @property
+    def zone_count(self) -> int:
+        return len(self.zones)
         
-        @property
-        def expires_at(self) -> datetime:
-            return self.received_at + timedelta(seconds=RAW_OCCUPANCY_TTL_SECONDS)
+    @property
+    def expires_at(self) -> datetime:
+        return self.received_at + timedelta(seconds=RAW_OCCUPANCY_TTL_SECONDS)
         
-        def age_seconds(self, now: Optional[datetime] = None) -> float:
-            current = now or datetime.now(datetime.timezone.utc)
-            return (max(0.0, current-self.receuived_at).total_seconds())
-        
-        def is_stale(self, now: Optional[datetime] = None) -> bool:
-            return self.age_seconds(now) > RAW_OCCUPANCY_TTL_SECONDS
+    def age_seconds(self, current: datetime) -> float:
+        #current = now or datetime.now(timezone.utc)
+        return max(0.0, (current - self.received_at).total_seconds())
+               
+    # bug fix as this method has not been included but was being called
+    def is_stale(self, now: datetime) -> bool:
+        return (now - self.received_at).total_seconds() > RAW_OCCUPANCY_TTL_SECONDS
         
 class RawOccupancyBufferService(object):
     """
@@ -50,7 +51,7 @@ class RawOccupancyBufferService(object):
         self._queue: Deque[RawOccupancyBatch] = deque()
 
     def put_batch(self, zones: List[RawOccupancyRecord]) -> Dict[str, object]:
-        now = datetime.now(datetime.timezone.utc)
+        now = datetime.now(timezone.utc)
         batch_id = str(uuid.uuid4())
 
         with self._lock:
@@ -97,7 +98,7 @@ class RawOccupancyBufferService(object):
             }
         
     def pop_next_batch(self) -> Optional[Dict[str, object]]:
-        now = datetime.now(datetime.timezone.utc)
+        now = datetime.now(timezone.utc)
 
         with self._lock:
             self._purge_stale_locked(now)
@@ -152,7 +153,7 @@ class RawOccupancyBufferService(object):
         }
     
     def status(self) -> Dict[str, object]:
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         with self._lock:
             self._purge_stale_locked(now)
             queue_depth = len(self._queue)

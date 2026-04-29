@@ -1,0 +1,66 @@
+# no API key on testdata put
+curl -X PUT "http://localhost:8082/occupancy/testdata" \
+  -H "X-API-Key: cc" \
+  -H "Content-Type: application/json" \
+  -d "{}"
+  
+  
+# no Payload on testdata put
+curl -X PUT "http://localhost:8082/occupancy/testdata" \
+  -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa" \
+  -H "Content-Type: application/json" \
+  -d "{}"
+
+
+# Simulated data push via curl - full uri
+curl -X PUT "http://localhost:8082/api/v1/occupancy/testdata" \
+  -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa" \
+  -H "Content-Type: application/json" \
+  -d '[
+        {
+          "timestamp": "2026-04-29T13:00:00Z",
+          "zone_id": 1,
+          "zone_name": "Main Lobby",
+          "real_count": 42,
+          "capacity": 100,
+          "risk_status": "LOW RISK"
+        }
+      ]'
+
+# Simulated data push via curl - short uri
+curl -X PUT "http://localhost:8082/occupancy/testdata" \
+  -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa" \
+  -H "Content-Type: application/json" \
+  -d '[{"timestamp":"2026-04-29T13:00:00Z","zone_id":1,"zone_name":"Main Lobby","real_count":42,"capacity":100,"risk_status":"LOW RISK"},{"timestamp":"2026-04-29T13:00:02Z","zone_id":2,"zone_name":"Gunk Zone","real_count":42,"capacity":100,"risk_status":"LOW RISK"}]'
+  
+# Simulated data buffer pull via curl - short uri
+curl -v "http://localhost:8082/occupancy/testdata/next" \
+  -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa"
+  
+curl -Method PUT "http://localhost:8082/api/v1/occupancy/testdata" `
+  -Headers @{ "X-API-Key"="2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa"; "Content-Type"="application/json" } `
+  -Body @'
+[
+  {
+    "timestamp": "2026-04-29T13:00:00Z",
+    "zone_id": 1,
+    "zone_name": "Main Lobby",
+    "noisy_count": 42,
+    "capacity": 100,
+    "risk_status": "LOW RISK"
+  },
+  {
+    "timestamp": "2026-04-29T13:00:00Z",
+    "zone_id": 2,
+    "zone_name": "Level 1 - North Wing",
+    "noisy_count": 12,
+    "capacity": 75,
+    "risk_status": "LOW RISK"
+  }
+]
+'@
+
+
+# Buffer status pull via curl - short uri
+curl -v "http://localhost:8082/occupancy/testdata/status" \
+  -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa"

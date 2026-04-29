@@ -1,6 +1,7 @@
 # app\api\v1\routes\occopancy.py
 
 import logging
+from operator import ne
 from typing import List
 #from urllib import response
 from fastapi import APIRouter, Depends, Response, status
@@ -59,8 +60,7 @@ def get_next_raw_occupancy_batch(response: Response):
     """
     batch = raw_occupancy_buffer_service.pop_next_batch()
     if batch is None:
-        response.status_code = status.HTTP_204_NO_CONTENT
-        return None
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
     return batch
 
 @router.get(
