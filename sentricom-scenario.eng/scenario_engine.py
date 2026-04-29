@@ -161,7 +161,7 @@ class ScenarioEngine:
             "time": self.time.isoformat(),
             "elapsed": elapsed,
             "raw_counts": self.raw_count.copy(),
-            "density": {z: round(self.get_density(z), 2) for z in self.raw_count},
+            #"density": {z: round(self.get_density(z), 2) for z in self.raw_count},
             "speed": {z: round(self.get_speed(self.get_density(z)), 2) for z in self.raw_count},
             "event": event
         }
