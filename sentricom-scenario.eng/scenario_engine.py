@@ -26,6 +26,10 @@ class ScenarioEngine:
         self.prev_raw_counts = self.raw_count.copy()
         self.exit_blocked_triggered = False
 
+        self.zones = ["A", "B", "C"]
+        self.active_vulnerable_zone = random.choice(self.zones)
+        self.last_vulnerable_switch = 0
+
         self.events = []
 
     def get_density(self, zone_id):
@@ -53,6 +57,32 @@ class ScenarioEngine:
         else:
             return None
 
+    def update_vulnerability_focus(self, elapsed):
+        # switch every 3–6 seconds (controls rotation speed)
+        if elapsed - self.last_vulnerable_switch >= random.randint(3, 6):
+
+            if self.active_vulnerable_zone is None:
+                if random.random() < 0.1:
+                    self.active_vulnerable_zone = random.choice(self.zones)
+            else:
+                current_index = self.zones.index(self.active_vulnerable_zone)
+
+                if current_index < len(self.zones) - 1:
+                    self.active_vulnerable_zone = self.zones[current_index + 1]
+
+                else:
+                    self.active_vulnerable_zone = None
+
+            self.last_vulnerable_switch = elapsed
+
+    def get_vulnerable_flags(self):
+        if self.active_vulnerable_zone is None:
+            return {zone: False for zone in self.zones}
+        return {
+            zone: zone == self.active_vulnerable_zone
+            for zone in self.zones
+        }
+
     def fire_scenario(self, elapsed):
         event = None
 
@@ -65,7 +95,7 @@ class ScenarioEngine:
         if elapsed == 9:
             event = "FIRE_ALARM_A_TRIGGERED"
 
-        if elapsed >= 6:
+        if elapsed >= 9:
             density_a = self.get_density("A")
             speed_a = self.get_speed(density_a)
 
@@ -75,14 +105,6 @@ class ScenarioEngine:
             self.raw_count["B"] += int(move * 0.8)
             self.raw_count["C"] += int(move * 0.5)
 
-        congestion_event = self.check_congestion("B")
-        if congestion_event:
-            event = congestion_event
-
-            spill = 2
-            self.raw_count["B"] = max(0, self.raw_count["B"] - spill)
-            self.raw_count["C"] += spill
-        
         if self.raw_count["A"] == 0:
             event = "ZONE_A_CLEARED"
 
@@ -112,10 +134,6 @@ class ScenarioEngine:
             event = "EXIT_BLOCKED_B"
             self.exit_blocked_triggered = True
 
-        congestion_event = self.check_congestion("B")
-        if congestion_event and not event:
-            event = congestion_event
-
         return event
 
     def false_alarm_scenario(self, elapsed):
@@ -140,19 +158,29 @@ class ScenarioEngine:
         self.time = current_time
         elapsed = int((self.time - self.start_time).total_seconds())
 
+        self.update_vulnerability_focus(elapsed)
+
         if self.scenario_type == "fire":
             event = self.fire_scenario(elapsed)
-        
         elif self.scenario_type == "blocked_exit":
             event = self.blocked_exit_scenario(elapsed)
-
         elif self.scenario_type == "false_alarm":
             event = self.false_alarm_scenario(elapsed)
-
         else:
             raise ValueError("Unknown scenario type")
 
         self.prev_raw_counts = self.raw_count.copy()
+
+        flags = self.get_vulnerable_flags()
+
+        self.vulnerable_event = None
+
+        if flags.get("A"):
+            self.vulnerable_event = "VULNERABLE_PERSONS_IDENTIFIED_A"
+        if flags.get("B"):
+            self.vulnerable_event = "VULNERABLE_PERSONS_IDENTIFIED_B"
+        if flags.get("C"):
+            self.vulnerable_event = "VULNERABLE_PERSONS_IDENTIFIED_C"
 
         return {
             "location_id": self.location_id,
@@ -163,5 +191,7 @@ class ScenarioEngine:
             "raw_counts": self.raw_count.copy(),
             #"density": {z: round(self.get_density(z), 2) for z in self.raw_count},
             "speed": {z: round(self.get_speed(self.get_density(z)), 2) for z in self.raw_count},
-            "event": event
+            "event": event,
+            "vulnerable_event": self.vulnerable_event,
+            "vulnerable_flag": self.get_vulnerable_flags()
         }

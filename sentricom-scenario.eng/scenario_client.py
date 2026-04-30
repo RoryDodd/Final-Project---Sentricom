@@ -54,7 +54,17 @@ def main():
                     "real_count": count,
                     "capacity": 100,
                     "risk_status": "LOW RISK",
-                    "event": state["event"]
+                    "event": state["event"],
+                    "vulnerable_flag": (
+                        state["vulnerable_flag"].get(zone_key)
+                        if state["vulnerable_flag"].get(zone_key) is True
+                        else False
+                    ),
+                    "vulnerable_event": (
+                        state["vulnerable_event"]
+                        if state["vulnerable_flag"].get(zone_key) is True
+                        else None
+                    )
                 })
 
                 zone_id += 1
