@@ -72,8 +72,8 @@ class ScenarioEngine:
             move = int(min(5, self.raw_count["A"]) * speed_a)
 
             self.raw_count["A"] -= move
-            self.raw_count["B"] += int(move * 0.7)
-            self.raw_count["C"] += int(move * 0.3)
+            self.raw_count["B"] += int(move * 0.8)
+            self.raw_count["C"] += int(move * 0.5)
 
         congestion_event = self.check_congestion("B")
         if congestion_event:
