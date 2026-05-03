@@ -1,7 +1,7 @@
 # app/schemas/zones.py
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 class ZoneLatest(BaseModel):
     timestamp: Optional[datetime]
@@ -14,3 +14,41 @@ class ZoneLatest(BaseModel):
     zone_state: Optional[str]
 
     model_config = {"from_attributes": True}
+
+class PrivacyZoneReadingIn(BaseModel):
+    """
+    Privatised zone data model from Priv Eng.
+
+    Field names match current Priv Eng output to PUT
+    """
+    time: datetime
+    zone_id: int = Field(..., ge=1)
+    dp_count: float = Field(..., ge=0)
+    risk_level: str = Field(..., min_length=1)
+    event_type: Optional[str] = None
+    vuln_flag: bool
+
+    desnity: Optional[float] = None
+    speed: Optional[float] = None
+    confidence: Optional[float] = None
+    zone_state: Optional[str] = None
+    site_id: int = 1
+
+    location_id: Optional[int] = None
+    scenario_id: Optional[float] = None
+    epsilon: Optional[float] = None
+    mechanism: Optional[str] = None
+
+
+class ZoneWriteResult(BaseModel):
+    zone_id: Optional[int] = None
+    status: str
+    detail: Optional[str] = None
+
+class ZoneBatchWriteResponse(BaseModel):
+    processed: int
+    inserted: int
+    duplicates: int
+    failed: int
+    results: List[ZoneWriteResult]
+

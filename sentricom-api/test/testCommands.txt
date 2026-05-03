@@ -1,3 +1,9 @@
+
+# https://afert-umber.vercel.app/api/v1/zones/latest/3
+# http://localhost:8082/occupancy/testdata" \
+
+
+
 # no API key on testdata put
 curl -X PUT "http://localhost:8082/occupancy/testdata" \
   -H "X-API-Key: cc" \
@@ -64,3 +70,22 @@ curl -Method PUT "http://localhost:8082/api/v1/occupancy/testdata" `
 # Buffer status pull via curl - short uri
 curl -v "http://localhost:8082/occupancy/testdata/status" \
   -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa"
+  
+  
+  
+###################################################################################################
+zone_data_put
+
+curl -X PUT "http://127.0.0.1:8082/api/v1/zones/latest" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa" \
+  -d '[
+    {
+      "time": "2026-05-03T10:00:00Z",
+      "zone_id": 1,
+      "dp_count": 12.5,
+      "risk_level": "LOW RISK",
+      "event_type": "NORMAL_FLOW",
+      "vuln_flag": false
+    }
+  ]'
