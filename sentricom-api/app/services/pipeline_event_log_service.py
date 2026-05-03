@@ -17,6 +17,8 @@ def log_pipeline_event(
     zone_count: Optional[int] = None,
     age_seconds: Optional[float] = None,
     queue_depth: Optional[int] = None,
+    validation_error: Optional[str] = None,
+    problem_record: Optional[str] = None,
 ) -> None:
     """
     Persist a metadata-only API pipeline lifecycle event.
@@ -32,8 +34,10 @@ def log_pipeline_event(
                 batch_id,
                 zone_count,
                 age_seconds,
-                queue_depth
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                queue_depth,
+                validation_error,
+                problem_record
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 event_type,
@@ -43,6 +47,8 @@ def log_pipeline_event(
                 zone_count,
                 age_seconds,
                 queue_depth,
+                validation_error,
+                problem_record,
             ),
         )
 

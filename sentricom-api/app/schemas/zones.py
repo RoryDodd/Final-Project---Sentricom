@@ -24,7 +24,7 @@ class PrivacyZoneReadingIn(BaseModel):
     time: datetime
     zone_id: int = Field(..., ge=1)
     dp_count: float = Field(..., ge=0)
-    risk_lvel: str = Field(..., min_length=1)
+    risk_level: str = Field(..., min_length=1)
     event_type: Optional[str] = None
     vuln_flag: bool
 

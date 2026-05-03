@@ -175,6 +175,8 @@ def init_db():
             zone_count INTEGER,
             age_seconds REAL,
             queue_depth INTEGER,
+            validation_error TEXT,
+            problem_record TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     """)
