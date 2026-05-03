@@ -4,7 +4,7 @@ import logging
 from operator import ne
 from typing import List
 #from urllib import response
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Response, status, HTTPException
 from app.dependencies.auth_dep import require_api_key
 from app.schemas.occupancy import (
     RawOccupancyBatchEnvelope,
@@ -40,7 +40,6 @@ def put_raw_occupancy_testdata(payload: List[RawOccupancyRecord]):
             queue_depth=raw_occupancy_buffer_service.status()["queue_depth"]
         )
         # Serialise error response
-        from fastAPI import HTTPException
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Payload must contain at least one zone reading")
     
     return raw_occupancy_buffer_service.put_batch(payload)

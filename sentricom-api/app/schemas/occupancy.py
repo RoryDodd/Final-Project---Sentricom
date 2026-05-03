@@ -11,13 +11,13 @@ class RawOccupancyRecord(BaseModel):
     - Buffer for in memory transport only.
     - Records using this schema must never be persisted as the raw data may contain PII.
     """
-
     timestamp: datetime
     zone_id: int = Field(..., ge=1)
     zone_name: str = Field(..., min_length=1)
     real_count: int = Field(..., ge=0)
-    capacity: int = Field(..., ge=1)
     risk_status: str = Field(..., min_length=1)
+    event: str = Field(..., min_legth=1)
+    vuld_flag: bool
 
     @validator("zone_name", "risk_status")
     def non_empty_str(cls, value):

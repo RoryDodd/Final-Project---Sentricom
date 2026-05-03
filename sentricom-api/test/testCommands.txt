@@ -1,3 +1,9 @@
+
+# https://afert-umber.vercel.app/api/v1/zones/latest/3
+# http://localhost:8082/occupancy/testdata" \
+
+
+
 # no API key on testdata put
 curl -X PUT "http://localhost:8082/occupancy/testdata" \
   -H "X-API-Key: cc" \
