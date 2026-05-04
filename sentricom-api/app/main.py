@@ -11,7 +11,8 @@ import os
 app = FastAPI()
 
 # configure allowed origins via env var, fallback to local + deployed frontend
-origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,https://afert-umber.vercel.app")
+#origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,https://afert-umber.vercel.app")
+origins = os.getenv("ALLOWED_ORIGINS", "*")
 origins = [o.strip() for o in origins.split(",") if o.strip()]
 
 # Configure CORS

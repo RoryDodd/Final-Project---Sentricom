@@ -1,9 +1,12 @@
 # app/chemas/occupancy.py
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field, validator
 
+
+#TODO - fix typo - vuln_flag not vuld_flag
+#vuln flag as a string 
 class RawOccupancyRecord(BaseModel):
     """
     Represents structure of non-privatised zone occupancy record from ScenarioSim.
@@ -16,8 +19,8 @@ class RawOccupancyRecord(BaseModel):
     zone_name: str = Field(..., min_length=1)
     real_count: int = Field(..., ge=0)
     risk_status: str = Field(..., min_length=1)
-    event: str = Field(..., min_legth=1)
-    vuld_flag: bool
+    event: Optional[str] = None
+    vuln_flag: bool
 
     @validator("zone_name", "risk_status")
     def non_empty_str(cls, value):
@@ -38,7 +41,7 @@ class RawOccupancyBatchEnvelope(BaseModel):
     """
     Represents data returned to PrivacyEngine by GET /occoupancy/testdata/next endpoint.
     """
-
+    
     batch_id: str
     received_at: datetime
     expires_at: datetime
