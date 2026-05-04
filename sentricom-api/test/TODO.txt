@@ -28,3 +28,9 @@ double check what we said about event endpoint...
 -- is it a separate call?
 
 add an endpoint that pulls all data out of zones or top 100 * descending configurable..
+
+zena db schema merge and update
+
+make sure key is hidden in url during requests
+
+admin needs an endpoint to be able to add new ueser

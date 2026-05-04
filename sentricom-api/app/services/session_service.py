@@ -10,7 +10,7 @@ SESSION_LIFETIME_HOURS = 24
 
 class SessionService:
     
-    def create_session(self, key_id: int, ip_address: str, user_agent: str) -> str:
+    def create_session(self, key_id: int, user_id: int, ip_address: str, user_agent: str) -> str:
         """
         Create a new session for a given Client key
         Returns session token
@@ -21,10 +21,10 @@ class SessionService:
         expires_at = now + timedelta(hours=SESSION_LIFETIME_HOURS)
 
         execute_and_return("""
-            INSERT INTO sessions (key_id, session_token, ip_address, user_agent, created_at, expires_at, active)
-            VALUES (?, ?, ?, ?, ?, ?, 1)
+            INSERT INTO sessions (key_id, user_id, session_token, ip_address, user_agent, created_at, expires_at, active)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
             """,
-            (key_id, session_token, ip_address, user_agent, now, expires_at)
+            (key_id, user_id, session_token, ip_address, user_agent, now, expires_at)
         )
         
         return session_token

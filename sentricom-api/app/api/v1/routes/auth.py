@@ -1,8 +1,10 @@
 # app/api/v1/routes/auth.py
 
-from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi import APIRouter, HTTPException, Request, Depends, Body
 from app.services.api_key_service import api_key_service
 from app.services.session_service import session_service, SESSION_LIFETIME_HOURS
+from app.services.auth_service import auth_service
+from app.db.connection import execute
 #from app.dependencies.auth import require_user_session_admin
 from typing import Optional
 
@@ -42,6 +44,7 @@ def delete_key(key_id: int):
     ok = api_key_service.delete_key(key_id)
     return {"success": ok}
 
+'''
 # ----- Create session ----- #
 @router.post("/session")
 async def create_session(request: Request):
@@ -70,4 +73,74 @@ async def create_session(request: Request):
         "session_token": token,
         "expires_in_hours": SESSION_LIFETIME_HOURS
     }
+'''
 
+# ----- Login ----- #
+@router.post("/login")
+async def login(
+    request: Request,
+    identifier: str = Body(...),
+    password: str = Body(...),
+):
+    """
+    Login using username OR email + password + API key exchange for session token.
+    """
+
+    api_key = request.headers.get("X-API-Key")
+    if not api_key:
+        raise HTTPException(status_code=400, detail="X-API-Key header missing")
+    
+    api_key_rec = api_key_service.get_by_plaintext(api_key)
+    if not api_key_rec:
+        raise HTTPException(status_code=401, detail="API key invalid or revoked")
+    
+    user = auth_service.authenticate_user(identifier, password)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Update last login time for user
+    execute(
+        """
+        UPDATE users
+        SET last_login = CURRENT_TIMESTAMP
+        WHERE user_id = ?
+        """,
+        (user["user_id"],)
+    )
+
+    client_ip = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent", "")
+
+    token = session_service.create_session(
+        key_id=api_key_rec["key_id"],
+        user_id=user["user_id"],
+        ip_address=client_ip,
+        user_agent=user_agent,
+    )
+
+    return {
+        "session_token": token,
+        "expires_in_hours": SESSION_LIFETIME_HOURS,
+        "user": {
+            "user_id": user["user_id"],
+            "username": user["username"],
+            "role": user["role"],
+        }
+    }
+
+
+@router.post("/logout")
+async def logout(
+    request: Request,
+):
+    token = request.headers.get("X-Session-Token")
+
+    if not token:
+        raise HTTPException(status_code=400, detail="Missing session token")
+    
+    session_service.revoke_session(token)
+
+    return {"success": True}
+
+    
