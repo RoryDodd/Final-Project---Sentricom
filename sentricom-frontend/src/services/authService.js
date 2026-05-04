@@ -4,7 +4,7 @@ import { saveSessionToken } from "../utils/auth";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "https://afert-umber.vercel.app";
 
-const API_KEY = import.meta.env.VITE_API_KEY; // put this in .env
+const API_KEY = import.meta.env.VITE_API_KEY; 
 
 console.log("API KEY:", API_KEY);
 
@@ -16,7 +16,7 @@ export async function loginUser(identifier, password) {
       "X-API-Key": API_KEY,
     },
     body: JSON.stringify({
-      identifier, // <-- IMPORTANT CHANGE
+      identifier, 
       password,
     }),
   });
