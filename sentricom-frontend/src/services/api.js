@@ -9,7 +9,7 @@ export async function apiFetch(endpoint, options = {}) {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      "X-Session-Token": token, // 🔥 THIS FIXES YOUR ISSUE
+      "X-Session-Token": token, 
       ...(options.headers || {}),
     },
   });
