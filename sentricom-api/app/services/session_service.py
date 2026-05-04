@@ -71,5 +71,6 @@ class SessionService:
             """, 
             (session_token,)
         )
+        return True
         
 session_service = SessionService()

@@ -16,21 +16,20 @@ curl -X PUT "https://afert-umber.vercel.app/occupancy/testdata" \
 curl -v "https://afert-umber.vercel.app/occupancy/testdata/next" \
   -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa"
   
+ 
+ # LOGIN
+curl -X POST "http://127.0.0.1:8082/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa" \
+  -d '{
+    "identifier": "admin@sentricom.com",
+    "password": "Admin"
+  }'
   
-
-- capacity - remove **
-- event endpoint - 
-- density and speed add -
-
-
-also create a put from front end for privacy budge and a get for privacy engine...
-double check what we said about event endpoint...
--- is it a separate call?
-
-add an endpoint that pulls all data out of zones or top 100 * descending configurable..
-
-zena db schema merge and update
-
-make sure key is hidden in url during requests
-
-admin needs an endpoint to be able to add new ueser
+# LOGOUT
+curl -X POST "http://127.0.0.1:8082/api/v1/auth/logout" \
+  -H "X-Session-Token: 44b6baf68b960d6995511ea7a31059f8a2a915ad9440127d0231bb4a7143f3c0" \
+  -H "Content-Length: 0" \
+  -H "Connection: close"
+ 
+  

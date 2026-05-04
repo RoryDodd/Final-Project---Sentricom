@@ -132,7 +132,7 @@ async def login(
 
 @router.post("/logout")
 async def logout(
-    request: Request,
+    request: Request
 ):
     token = request.headers.get("X-Session-Token")
 
