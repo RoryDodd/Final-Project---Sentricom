@@ -52,35 +52,17 @@ def main():
                     "zone_id": zone_id,
                     "zone_name": ZONE_MAP.get(zone_key, zone_key),
                     "real_count": count,
-                    "capacity": 100,
                     "risk_status": "LOW RISK",
                     "event": state["event"],
-                    "vulnerable_flag": (
+                    "vuln_flag": (
                         state["vulnerable_flag"].get(zone_key)
                         if state["vulnerable_flag"].get(zone_key) is True
                         else False
                     ),
-                    "vulnerable_event": (
-                        state["vulnerable_event"]
-                        if state["vulnerable_flag"].get(zone_key) is True
-                        else None
-                    )
                 })
 
                 zone_id += 1
 
-
-            #payload = {
-                #"location_id": state["location_id"],
-                #"scenario_id": state["scenario_id"],
-                #"scenario_type": state["scenario_type"],
-                #"time": state["time"],
-                #"raw_counts": state["raw_counts"],
-                #"time_elapsed": state["elapsed"],
-                #"speed": state["speed"],
-                #"event": state["event"],
-                #"dp_config": dp_config
-            #}
             try:
                 res = requests.put(API_URL, json=zones_payload, headers=headers)
                 response_data = res.json()
