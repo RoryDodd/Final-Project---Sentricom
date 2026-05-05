@@ -1,3 +1,5 @@
 *.mp4
 __pycache__
 *.pyc
+__pycache__/
+*.pyc

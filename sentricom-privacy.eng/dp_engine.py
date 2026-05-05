@@ -65,3 +65,15 @@ def classify(count, density):
     elif count >= 20:
         return "MONITOR"
     return "SAFE"
+
+
+def create_dp(config):
+    """Factory function to create a DP mechanism based on config."""
+    if config["mechanism"] == "laplace":
+        return LaplaceDifferentialPrivacy(epsilon=config["epsilon"])
+    elif config["mechanism"] == "gaussian":
+        return GaussianDifferentialPrivacy(epsilon=config["epsilon"], delta=config["delta"])
+    elif config["mechanism"] == "discrete_laplace":
+        return DiscreteLaplaceDifferentialPrivacy(epsilon=config["epsilon"])
+    else:
+        raise ValueError("Unknown DP mechanism specified")
