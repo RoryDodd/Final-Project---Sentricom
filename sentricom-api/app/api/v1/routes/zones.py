@@ -350,7 +350,8 @@ def upsert_multiple_zone_readings(payload: List[dict]):
             results.append({
                 "zone_id": zone_id,
                 "status": "failed",
-                "detail": "Unexpected error while writing record",
+                #"detail": "Unexpected error while writing record",
+                "detail": str(e),
             })
 
     return {
