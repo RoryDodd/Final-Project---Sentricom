@@ -259,7 +259,8 @@ def upsert_multiple_zone_readings(payload: List[dict]):
         processed += 1
 
         try:
-            record = PrivacyZoneReadingIn.model_validate(raw_record)
+            #record = PrivacyZoneReadingIn.model_validate(raw_record) #pydantic v2 only
+            record = PrivacyZoneReadingIn(**raw_record) #pydantic v1 and v2
             result = _write_privacy_zone_reading(record)
 
             if result["status"] == "inserted":
@@ -453,7 +454,8 @@ def upsert_zone_reading(zone_id: int, payload: PrivacyZoneReadingIn):
             severity="warning",
             reason="zone_id_mismatch",
             validation_error=f"path zone_id={zone_id}, payload zone_id={payload.zone_id}",
-            problem_record=payload.model_dump_json(),
+            problem_record=payload.model_dump_json(), #should work in pydantic v1 and v2
+            # problem_record=payload.json(), #pydantic v1 syntax 
         )
 
         raise HTTPException(
@@ -470,7 +472,8 @@ def upsert_zone_reading(zone_id: int, payload: PrivacyZoneReadingIn):
             severity="warning",
             reason="sqlite_integrity_error",
             validation_error=str(e),
-            problem_record=payload.model_dump_json(),
+            problem_record=payload.model_dump_json(), #should work in pydantic v1 and v2
+            # problem_record=payload.json(), #pydantic v1 syntax
         )
 
         raise HTTPException(
@@ -484,7 +487,8 @@ def upsert_zone_reading(zone_id: int, payload: PrivacyZoneReadingIn):
             severity="critical",
             reason="unexpected_error",
             validation_error=str(e),
-            problem_record=payload.model_dump_json(),
+            problem_record=payload.model_dump_json(), #should work in pydantic v1 and v2
+            # problem_record=payload.json(), #pydantic v1 syntax
         )
 
         raise HTTPException(
@@ -498,7 +502,8 @@ def upsert_zone_reading(zone_id: int, payload: PrivacyZoneReadingIn):
             severity="warning",
             reason="invalid_zone_record",
             validation_error=result["detail"],
-            problem_record=payload.model_dump_json(),
+            problem_record=payload.model_dump_json(), #should work in pydantic v1 and v2
+            # problem_record=payload.json(), #pydantic v1 syntax
         )
 
         raise HTTPException(
