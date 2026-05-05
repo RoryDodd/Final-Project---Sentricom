@@ -1,4 +1,4 @@
-# app\api\v1\routes\occopancy.py
+# app\api\v1\routes\occupancy.py
 
 import logging
 from operator import ne

@@ -34,7 +34,7 @@ def init_db():
 
     # dulplicate protection for occupancy_readings ** check date in timestamp
     execute("""
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_occupancy_readings_zone_timesamp
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_occupancy_readings_zone_timestamp
         ON occupancy_readings(zone_id, timestamp);
     """)
 

@@ -32,4 +32,23 @@ curl -X POST "http://127.0.0.1:8082/api/v1/auth/logout" \
   -H "Content-Length: 0" \
   -H "Connection: close"
  
-  
+
+-- exe thing
+-- trigger .. 
+
+
+# Bugs
+#1. vuld_flag typo - was designed to be vuln_flag
+#2. vuln_flag didn't match what the put was sending so 
+- vulnerable_flag was not correctly mapping to vuln_flag when sent to put endpoint from ScenarioSim
+#3. Static data passwords in db were initially plaintext that were getting inserted at start up but this didn't work for validation since the plaintext password is compared via a hashcompare method and only the hash is stored in the db.
+#4. DB schema has to be replicated across to the API deployment script to work with Vercel and was out of step before due to changes being made directly to support API development that weren't captured in the deployment script
+
+
+
+- broke an endpoint that was working when we were trying to accomodate new fields
+
+- adding new IP for client in filtering
+
+
+https://afert-umber.vercel.app/api/v1/zones/latest

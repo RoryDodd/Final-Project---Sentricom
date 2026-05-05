@@ -273,7 +273,7 @@ def upsert_multiple_zone_readings(payload: List[dict]):
                     severity="warning",
                     reason="record_write_failed",
                     validation_error=result.get("detail"),
-                    problem_record=json.dump(raw_record, default=str),
+                    problem_record=json.dumps(raw_record, default=str),
                 )
         
             results.append(result)
@@ -288,7 +288,7 @@ def upsert_multiple_zone_readings(payload: List[dict]):
                 severity="warning",
                 reason="pydantic_validation_error",
                 validation_error=str(e),
-                problem_record=json.dump(raw_record, default=str),
+                problem_record=json.dumps(raw_record, default=str),
             )
 
             results.append({
@@ -325,7 +325,7 @@ def upsert_multiple_zone_readings(payload: List[dict]):
                 severity="warning",
                 reason="sqlite_integrity_error",
                 validation_error=str(e),
-                problem_record=json.dump(raw_record, default=str),
+                problem_record=json.dumps(raw_record, default=str),
             )
 
             results.append({
@@ -344,7 +344,7 @@ def upsert_multiple_zone_readings(payload: List[dict]):
                 severity="critical",
                 reason="unexpected_error",
                 validation_error=str(e),
-                problem_record=json.dump(raw_record, default=str),
+                problem_record=json.dumps(raw_record, default=str),
             )
 
             results.append({
