@@ -5,10 +5,15 @@ import { useState } from "react";
 import PageContainer from "../components/PageContainer";
 import Card from "../components/Card";
 
+// Import API service for fetching dashboard zones 
+import { useEffect } from "react";
+import { getDashboardZones } from "../services/dashboardService";
+
 // GenerateReportPage allows users to configure and preview report options
 export default function GenerateReportPage() {
   // Store form input values for report generation
   const [formData, setFormData] = useState({
+  
     startDate: "",
     endDate: "",
     zone: "all",
@@ -16,6 +21,25 @@ export default function GenerateReportPage() {
     format: "pdf",
   });
 
+  const [zones, setZones] = useState([]);
+useEffect(() => {
+
+  async function loadZones() {
+    try {
+
+      const data = await getDashboardZones();
+      setZones(data);
+
+    } catch (err) {
+
+      console.error(err);
+
+    }
+  }
+
+  loadZones();
+
+}, []);
   // Update form state when any input field changes
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -77,20 +101,21 @@ export default function GenerateReportPage() {
             <div className="form-group">
               <label htmlFor="zone">Zone</label>
               <select
-                id="zone"
-                name="zone"
-                value={formData.zone}
-                onChange={handleChange}
-              >
-                <option value="all">All Zones</option>
-                <option value="zone1">Zone 1</option>
-                <option value="zone2">Zone 2</option>
-                <option value="zone3">Zone 3</option>
-                <option value="zone4">Zone 4</option>
-                <option value="zone5">Zone 5</option>
-              </select>
-            </div>
+              id="zone"
+              name="zone"
+              value={formData.zone}
+              onChange={handleChange}
+            >
 
+             <option value="all">All Zones</option>
+
+                 {zones.map((zone) => (
+                 <option key={zone.id} value={zone.id}>
+                 {zone.zoneName}
+                </option>
+                ))}
+
+            </select> </div>
             {/* Report type selection */}
             <div className="form-group">
               <label htmlFor="reportType">Report Type</label>

@@ -6,7 +6,14 @@ export default function AlertPanel({ zones = [] }) {
   );
 
   return (
-    <div className="alert-panel">
+    <div
+    className="alert-panel"
+    style={{
+    maxHeight: "400px",
+    overflowY: "auto",
+      }}
+    >
+      
       {alerts.length > 0 ? (
         alerts.map((zone) => (
           <p key={zone.id}>
