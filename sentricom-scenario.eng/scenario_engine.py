@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 
 class ScenarioEngine:
     def __init__(self, scenario_type="fire"):
+
+
         self.scenario_id = f"{scenario_type}_scenario"
         self.scenario_type = scenario_type
 
@@ -14,27 +16,46 @@ class ScenarioEngine:
         self.raw_count = {
             "A": 50,
             "B": 30,
-            "C": 20
+            "C": 20,
+            "D": 27,
+            "E": 15,
+            "F": 23
         }
 
         self.zone_area = {
             "A": 50,
             "B": 40,
-            "C": 30
+            "C": 30,
+            "D": 35,
+            "E": 25,
+            "F": 45
+        }
+
+        self.zones = list(self.raw_count.keys())
+
+        self.evacuation_routes = {
+            "A": "B",
+            "B": "C",
+            "C": "D",
+            "D": "EXIT",
+            "E": "D",
+            "F": "E"
         }
 
         self.prev_raw_counts = self.raw_count.copy()
+
         self.exit_blocked_triggered = False
 
-        self.zones = ["A", "B", "C"]
         self.active_vulnerable_zone = random.choice(self.zones)
         self.last_vulnerable_switch = 0
 
         self.events = []
 
+    #Density Model: People per square meter, calculated from raw count and zone area.
     def get_density(self, zone_id):
         return self.raw_count[zone_id] / self.zone_area[zone_id]
 
+    # Speed Model: Based on the fire engineering crowd flow model
     def get_speed(self, density):
         if density < 0.5:
             return 1.0
@@ -48,22 +69,25 @@ class ScenarioEngine:
             return 0.2
 
     def check_congestion(self, zone_id):
+
         density = self.get_density(zone_id)
 
         if density > 4.0:
             return "CRITICAL_CONGESTION_" + zone_id
         elif density > 2.5:
             return "CONGESTION_" + zone_id
-        else:
-            return None
+        
+        return None
 
     def update_vulnerability_focus(self, elapsed):
         # switch every 3–6 seconds (controls rotation speed)
         if elapsed - self.last_vulnerable_switch >= random.randint(3, 6):
 
             if self.active_vulnerable_zone is None:
+
                 if random.random() < 0.1:
                     self.active_vulnerable_zone = random.choice(self.zones)
+
             else:
                 current_index = self.zones.index(self.active_vulnerable_zone)
 
@@ -83,6 +107,27 @@ class ScenarioEngine:
             for zone in self.zones
         }
 
+    def move_people(self, from_zone, to_zone):
+
+        if to_zone == "EXIT":
+            max_flow = 12
+        else:
+            max_flow = 5
+
+        density = self.get_density(from_zone)
+        speed = self.get_speed(density)
+
+        available = self.raw_count[from_zone]
+
+        move = int(min(max_flow, available) * speed)
+
+        if move <= 0:
+            return
+
+        self.raw_count[from_zone] -= move
+        if to_zone != "EXIT":
+            self.raw_count[to_zone] += move
+
     def fire_scenario(self, elapsed):
         event = None
 
@@ -96,39 +141,28 @@ class ScenarioEngine:
             event = "FIRE_ALARM_A_TRIGGERED"
 
         if elapsed >= 9:
-            density_a = self.get_density("A")
-            speed_a = self.get_speed(density_a)
-
-            move = int(min(5, self.raw_count["A"]) * speed_a)
-
-            self.raw_count["A"] -= move
-            self.raw_count["B"] += int(move * 0.8)
-            self.raw_count["C"] += int(move * 0.5)
-
-        if self.raw_count["A"] == 0:
-            event = "ZONE_A_CLEARED"
+            
+            for from_zone, to_zone in self.evacuation_routes.items():
+                self.move_people(from_zone, to_zone)
 
         return event
 
     def blocked_exit_scenario(self, elapsed):
+
         event = None
 
         if elapsed == 3:
             event = "EVACUATION_STARTED"
 
         if elapsed >= 6:
-            density_b = self.get_density("B")
-            speed_b = self.get_speed(density_b)
-
-            move = int(min(5, self.raw_count["A"]) * speed_b)
-
-            self.raw_count["A"] -= move
-            self.raw_count["B"] += move  # ALL go into B (bottleneck)
+            
+            self.evacuation_routes["B"] = "A"  # Redirect B back to A, simulating blocked exit
         
+        for from_zone, to_zone in self.evacuation_routes.items():
+            self.move_people(from_zone, to_zone)
+
         if (
             not self.exit_blocked_triggered and
-            self.raw_count["A"] < self.prev_raw_counts["A"] and
-            self.raw_count["B"] > self.prev_raw_counts["B"] and
             self.get_density("B") > 2.5
         ):
             event = "EXIT_BLOCKED_B"
@@ -144,10 +178,10 @@ class ScenarioEngine:
 
         # minimal movement
         if elapsed >= 6:
-            fluctuation = 1
-            self.raw_count["A"] = max(0, self.raw_count["A"] + random.randint(-fluctuation, fluctuation))
-            self.raw_count["B"] = max(0, self.raw_count["B"] + random.randint(-fluctuation, fluctuation))
-            self.raw_count["C"] = max(0, self.raw_count["C"] + random.randint(-fluctuation, fluctuation))
+            for zone in self.zones:
+                fluctuation = random.randint(-1, 1)
+
+                self.raw_count[zone] = max(0, self.raw_count[zone] + fluctuation)
 
         return event
 
@@ -175,12 +209,16 @@ class ScenarioEngine:
 
         self.vulnerable_event = None
 
-        if flags.get("A"):
-            self.vulnerable_event = "VULNERABLE_PERSONS_IDENTIFIED_A"
-        if flags.get("B"):
-            self.vulnerable_event = "VULNERABLE_PERSONS_IDENTIFIED_B"
-        if flags.get("C"):
-            self.vulnerable_event = "VULNERABLE_PERSONS_IDENTIFIED_C"
+        for zone, active in flags.items():
+            if active:
+                self.vulnerable_event = (f"VULNERABLE_PERSONS_IDENTIFIED_{zone}")
+
+        congestion_events = []
+
+        for zone in self.zones:
+            congestion = self.check_congestion(zone)
+            if congestion:
+                congestion_events.append(congestion)
 
         return {
             "location_id": self.location_id,
@@ -189,9 +227,8 @@ class ScenarioEngine:
             "time": self.time.isoformat(),
             "elapsed": elapsed,
             "raw_counts": self.raw_count.copy(),
-            #"density": {z: round(self.get_density(z), 2) for z in self.raw_count},
-            "speed": {z: round(self.get_speed(self.get_density(z)), 2) for z in self.raw_count},
             "event": event,
             "vulnerable_event": self.vulnerable_event,
-            "vulnerable_flag": self.get_vulnerable_flags()
+            "vulnerable_flag": self.get_vulnerable_flags(),
+            "congestion_events": congestion_events
         }

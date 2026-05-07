@@ -17,13 +17,19 @@ dp_config = {
     "delta": 1e-5
 }
 
-scenarios = ["fire", "blocked_exit", "false_alarm"]
+scenarios = ["fire",
+    #"blocked_exit",
+    #"false_alarm"
+]
 
 # ADDED: mapping from engine zones → API names
 ZONE_MAP = {
     "A": "Main Lobby",
     "B": "Corridor B",
-    "C": "Exit Hall"
+    "C": "Auditorium",
+    "D": "EXIT_SOUTH",
+    "E": "Offices_South",
+    "F": "Offices_East"
 }
 
 def main():
@@ -34,7 +40,7 @@ def main():
 
         print(f"--- Starting scenario: {scenario_type} ---")
 
-        for i in range(10):
+        for i in range(16):
             current_time = start_time + timedelta(seconds=3 * i)
 
             state =scenario.step(current_time)
