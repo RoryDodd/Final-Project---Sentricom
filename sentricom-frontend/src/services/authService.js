@@ -26,8 +26,9 @@ export async function loginUser(identifier, password) {
   }
 
   const data = await response.json();
-
+  console.log("LOGIN RESPONSE:", data);
+  console.log("USER DATA:", data.user);
   saveSessionToken(data.session_token);
-
+  localStorage.setItem("sentricom_role", data.user.role);
   return data;
 }

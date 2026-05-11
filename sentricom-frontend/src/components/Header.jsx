@@ -5,17 +5,27 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Navigation tabs
-  const tabs = [
-    { label: "Overview", path: "/dashboard" },
-    { label: "Generate Report", path: "/generate" },
-    { label: "Profile", path: "/profile" },
-  ];
+  
+ // Navigation tabs
+const tabs = [
+  { label: "Overview", path: "/dashboard" },
+  { label: "Generate Report", path: "/generate" },
+  { label: "Profile", path: "/profile" },
+
+  // Admin-only navigation tab
+  ...(localStorage.getItem("sentricom_role") === "admin"
+    ? [{ label: "Admin", path: "/admin" }]
+    : []),
+];
 
   // Logout handler
   const handleLogout = () => {
-    navigate("/login");
-  };
+
+  localStorage.removeItem("sentricom_session_token");
+  localStorage.removeItem("sentricom_role");
+
+  navigate("/login");
+};
 
   return (
     <header className="header">

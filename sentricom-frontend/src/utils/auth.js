@@ -13,3 +13,13 @@ export function removeSessionToken() {
 export function isLoggedIn() {
   return !!getSessionToken();
 }
+
+// Get current user role
+export function getUserRole() {
+  return localStorage.getItem("sentricom_role");
+}
+
+// Check if current user is admin
+export function isAdmin() {
+  return getUserRole() === "admin";
+}
