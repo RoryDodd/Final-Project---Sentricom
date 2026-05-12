@@ -1,77 +1,97 @@
-from flask import Flask, request, jsonify
+__author__ = "R Dodd"
+__version__ = "2.0"
+__date__ = "2026"
+
 import requests
-import dp_engine
 
-app = Flask(__name__)
+# ---------------------------------------------------------------------------
+# Config
+# ---------------------------------------------------------------------------
 
-# Your teammate's API endpoint (replace this)
-EXTERNAL_API_URL = "http://external-service/api/events"
+# External API to retrieve test data
+EXTERNAL_API_URL = "https://afert-umber.vercel.app/occupancy/testdata/next"
 
-def create_dp(config):
-    if config["mechanism"] == "laplace":
-        return dp_engine.LaplaceDifferentialPrivacy(epsilon=config["epsilon"])
-    elif config["mechanism"] == "gaussian":
-        return dp_engine.GaussianDifferentialPrivacy(epsilon=config["epsilon"], delta=config["delta"])
-    elif config["mechanism"] == "discrete_laplace":
-        return dp_engine.DiscreteLaplaceDifferentialPrivacy(epsilon=config["epsilon"])
-    else:
-        raise ValueError("Unknown DP mechanism specified")
+# Endpoint to POST DP-processed results to
+INGEST_API_URL = "https://afert-umber.vercel.app/api/v1/zones/latest"
 
+API_KEY = "2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa"
 
+headers = {
+    "X-API-Key": API_KEY,
+    "Content-Type": "application/json"
+}
+
+# Zone areas for density calculation
 ZONE_AREAS = {
     "A": 50,
     "B": 40,
     "C": 30
 }
 
-@app.route("/ingest", methods=["POST"])
-def ingest():
-    data = request.json
-    results = []
+# Zone capacities matching the DB
+ZONE_CAPACITIES = {
+    1: 100,  # Main Lobby
+    2: 75,   # Level 1 - North Wing
+    3: 75,   # Level 1 - South Wing
+}
 
-    config = data.get("dp_config", {})
-    dp = create_dp(config)
+# Default DP config
+DEFAULT_DP_CONFIG = {
+    "mechanism": "discrete_laplace",
+    "epsilon": 0.7,
+    "delta": 1e-5
+}
 
+# ---------------------------------------------------------------------------
+# Fetch
+# ---------------------------------------------------------------------------
 
-    for zone_id, true_count in data["raw_counts"].items():
+def fetch_next_data():
+    """Fetch next batch of test data from the external API."""
+    try:
+        res = requests.get(EXTERNAL_API_URL, headers=headers, timeout=10)
+        res.raise_for_status()
+        return res.json()
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 204:  # No more data
+            return None
+        print(f"No data available from external API: {e}")
+        return None
+    except Exception as e:
+        print(f"Error fetching from external API: {e}")
+        return None
+    
+# ---------------------------------------------------------------------------
+# POST to Vercel backend
+# ---------------------------------------------------------------------------
 
-        # Apply DP
-        dp_count = dp.privatize_count(true_count)
-        # recompute density using DP count (important)
-        dp_density = dp_count / ZONE_AREAS[zone_id]
+def post_dp_results(batch_id, dp_results):
+    """PUT DP-processed batch results to the Vercel zones endpoint."""
 
-        risk_level = dp_engine.classify(dp_count, dp_density)
+    # Map dp_results fields to ZoneLatest schema
+    payload = [
+    {
+        "zone_id": r["zone_id"],
+        "zone_name": r["zone_name"],
+        "time": r["timestamp"],
+        "dp_count": int(r["dp_count"]),
+        "risk_level": r["risk_level"],
+        "vuln_flag": r.get("vuln_flag", False),
+        "capacity": ZONE_CAPACITIES.get(r["zone_id"], 100),
+        "risk_status": r["risk_level"].lower(),
+        "site_id": 1,
+    }
+    for r in dp_results
+]
 
-        event = {
-            "location_id": data["location_id"],
-            "scenario_id": data["scenario_id"],
-            "time": data["time"],
-            "zone_id": zone_id,
-
-            "dp_count": dp_count,
-            "density": round(dp_density, 2),
-            "speed": data["speed"][zone_id],
-
-            "risk_level": risk_level,
-            "event_type": data["event"],
-
-            "epsilon": dp.epsilon,
-            "mechanism": config.get("mechanism", "discrete_laplace")
-        }
-
-        # Send ONLY DP data to external API
-        try:
-            res = requests.post(EXTERNAL_API_URL, json=event)
-            res.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            print("Failed to send to external API:", e)
-
-        results.append(event)
-
-    return jsonify({
-        "status": "processed",
-        "zones_processed": len(results)
-    })
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    try:
+        res = requests.put(INGEST_API_URL, json=payload, headers=headers, timeout=10)
+        res.raise_for_status()
+        print(f"  ✓ Sent batch {batch_id} ({len(payload)} zones) → {res.status_code} {res.json()}")
+        return res.json()
+    except requests.exceptions.HTTPError as e:
+        print(f"  ✗ Failed to send batch {batch_id}: {e.response.status_code} - {e.response.text}")
+        return None
+    except Exception as e:
+        print(f"  ✗ Failed to send batch {batch_id}: {e}")
+        return None
