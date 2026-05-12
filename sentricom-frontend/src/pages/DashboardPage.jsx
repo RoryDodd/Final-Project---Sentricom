@@ -28,6 +28,12 @@ export default function DashboardPage() {
   // Load dashboard data on page load
   useEffect(() => {
 
+    // Initial dashboard load
+  loadData();
+    const token = getSessionToken();
+
+    if (!token) return;
+
   // Prevent duplicate API calls in React StrictMode
   if (hasLoaded.current) return;
 
@@ -53,11 +59,7 @@ export default function DashboardPage() {
     }
   }
 
-  // Initial dashboard load
-  loadData();
-    const token = getSessionToken();
-
-    if (!token) return;
+  
 
   // Refresh dashboard data every 10 seconds
   const interval = setInterval(loadData, 10000);
