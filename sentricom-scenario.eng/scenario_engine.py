@@ -110,9 +110,9 @@ class ScenarioEngine:
     def move_people(self, from_zone, to_zone):
 
         if to_zone == "EXIT":
-            max_flow = 12
+            max_flow = 10
         else:
-            max_flow = 5
+            max_flow = 7
 
         density = self.get_density(from_zone)
         speed = self.get_speed(density)

@@ -40,7 +40,7 @@ def main():
 
         print(f"--- Starting scenario: {scenario_type} ---")
 
-        for i in range(16):
+        for i in range(25):
             current_time = start_time + timedelta(seconds=3 * i)
 
             state =scenario.step(current_time)
