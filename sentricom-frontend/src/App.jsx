@@ -9,6 +9,10 @@ import DashboardPage from "./pages/DashboardPage";
 import GenerateReportPage from "./pages/GenerateReportPage";
 import ProfilePage from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
+import AdminPage from "./pages/AdminPage";
+
+// Route protection
+import AdminRoute from "./components/AdminRoute";
 
 // App routes
 function App() {
@@ -47,6 +51,18 @@ function App() {
         element={
           <MainLayout>
             <ProfilePage />
+          </MainLayout>
+        }
+      />
+
+      {/* Admin page */}
+      <Route
+        path="/admin"
+        element={
+          <MainLayout>
+            <AdminRoute>
+              <AdminPage />
+            </AdminRoute>
           </MainLayout>
         }
       />
