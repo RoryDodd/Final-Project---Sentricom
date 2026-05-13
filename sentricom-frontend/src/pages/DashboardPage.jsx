@@ -1,12 +1,9 @@
-// Layout wrapper and React hooks
 import PageContainer from "../components/PageContainer";
 import { useEffect, useState, useRef } from "react";
 
-// API services and data transformation utilities
 import { getDashboardZones } from "../services/dashboardService";
 import { transformZoneResults } from "../utils/transforms";
 
-// Reusable UI components
 import Card from "../components/Card";
 import SummaryTable from "../components/SummaryTable";
 import Heatmap from "../components/Heatmap";
@@ -25,49 +22,61 @@ export default function DashboardPage() {
   // Prevent duplicate API calls in React StrictMode
   const hasLoaded = useRef(false);
 
-  // Load dashboard data on page load
+  // Load dashboard data
   useEffect(() => {
 
-    // Initial dashboard load
-  loadData();
-    const token = getSessionToken();
+    if (hasLoaded.current) return;
 
-    if (!token) return;
+    hasLoaded.current = true;
 
-  // Prevent duplicate API calls in React StrictMode
-  if (hasLoaded.current) return;
+    async function loadData() {
 
-  hasLoaded.current = true;
+      try {
 
-  async function loadData() {
-    try {
+        // Check for valid session token
+        const token = getSessionToken();
 
-      // Fetch and transform backend zone data
-      const rawData = await getDashboardZones();
-      const transformed = transformZoneResults(rawData);
+        if (!token) {
+          setError("No active session found");
+          setLoading(false);
+          return;
+        }
 
-      setZones(transformed);
+        // Fetch and transform backend data
+        const rawData = await getDashboardZones();
+        const transformed = transformZoneResults(rawData);
 
-    } catch (err) {
+        setZones(transformed);
+        setError("");
 
-      console.error(err);
-      setError("Failed to load dashboard data");
+      } catch (err) {
 
-    } finally {
+        console.error(err);
 
-      setLoading(false);
+        if (err.message?.includes("401")) {
+          setError("Session expired. Please login again.");
+        } else {
+          setError("Failed to load dashboard data");
+        }
+
+      } finally {
+
+        setLoading(false);
+
+      }
     }
-  }
 
-  
+    // Initial load
+    loadData();
 
-  // Refresh dashboard data every 10 seconds
-  const interval = setInterval(loadData, 10000);
+    // Auto refresh every 10 seconds
+    const interval = setInterval(() => {
+      loadData();
+    }, 10000);
 
-  // Cleanup interval when component unmounts
-  return () => clearInterval(interval);
+    return () => clearInterval(interval);
 
-}, []);
+  }, []);
 
   // Loading screen
   if (loading) {
@@ -89,7 +98,6 @@ export default function DashboardPage() {
 
   return (
 
-    // Main dashboard layout
     <PageContainer
       title="Overview"
       subtitle="Real-time monitoring of crowd density across zones"
@@ -97,7 +105,7 @@ export default function DashboardPage() {
 
       <div className="dashboard-grid-2">
 
-        {/* Left dashboard column */}
+        {/* Left column */}
         <div className="dashboard-stack">
 
           <Card title="Warnings">
@@ -112,7 +120,7 @@ export default function DashboardPage() {
 
         </div>
 
-        {/* Right dashboard column */}
+        {/* Right column */}
         <div className="dashboard-stack">
 
           <Card title="Quick Summary">
