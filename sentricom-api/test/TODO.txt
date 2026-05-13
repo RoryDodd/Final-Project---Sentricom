@@ -1,0 +1,54 @@
+#NOTES FOR TOMORROW
+- don't need to send all the fields - some are stored and we can match them
+- add table so we know what was sent with latest client request -- need logic for if there's no newer, etc
+
+# this is the buffer status on the vercel endpoint
+curl -v "https://afert-umber.vercel.app/occupancy/testdata/status" \
+  -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa"
+
+# this is a sample put of two zones
+curl -X PUT "https://afert-umber.vercel.app/occupancy/testdata" \
+  -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa" \
+  -H "Content-Type: application/json" \
+  -d '[{"timestamp":"2026-04-29T13:00:00Z","zone_id":1,"zone_name":"Main Lobby","real_count":42,"capacity":100,"risk_status":"LOW RISK"},{"timestamp":"2026-04-29T13:00:02Z","zone_id":2,"zone_name":"Gunk Zone","real_count":42,"capacity":100,"risk_status":"LOW RISK"}]'
+  
+# Simulated data buffer pull via curl - short uri - this should pull the buffer
+curl -v "https://afert-umber.vercel.app/occupancy/testdata/next" \
+  -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa"
+  
+ 
+ # LOGIN
+curl -X POST "http://127.0.0.1:8082/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: 2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa" \
+  -d '{
+    "identifier": "admin@sentricom.com",
+    "password": "Admin"
+  }'
+  
+# LOGOUT
+curl -X POST "http://127.0.0.1:8082/api/v1/auth/logout" \
+  -H "X-Session-Token: 44b6baf68b960d6995511ea7a31059f8a2a915ad9440127d0231bb4a7143f3c0" \
+  -H "Content-Length: 0" \
+  -H "Connection: close"
+ 
+
+-- exe thing
+-- trigger .. 
+
+
+# Bugs
+#1. vuld_flag typo - was designed to be vuln_flag
+#2. vuln_flag didn't match what the put was sending so 
+- vulnerable_flag was not correctly mapping to vuln_flag when sent to put endpoint from ScenarioSim
+#3. Static data passwords in db were initially plaintext that were getting inserted at start up but this didn't work for validation since the plaintext password is compared via a hashcompare method and only the hash is stored in the db.
+#4. DB schema has to be replicated across to the API deployment script to work with Vercel and was out of step before due to changes being made directly to support API development that weren't captured in the deployment script
+
+
+
+- broke an endpoint that was working when we were trying to accomodate new fields
+
+- adding new IP for client in filtering
+
+
+https://afert-umber.vercel.app/api/v1/zones/latest
