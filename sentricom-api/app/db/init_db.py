@@ -265,7 +265,17 @@ def init_db():
     execute("""
         INSERT INTO users (username, email, password_hash, full_name, role) VALUES 
             ('Admin', 'admin@sentricom.com', '$2b$12$fgq3oXjO9UrxVkyZlSqvZuhCzikiizQ4hHifWct94H4yUMzo9NtFO', 'System Administrator', 'admin'),
-            ('Warden', 'warden@sentricom.com', '$2b$12$9ZOEGomya7Y4gFw1WHgXjOFtK3I8GuKhlSvMeKO7eLZmttaznXp9W', 'System Warden', 'warden');
+            ('Warden', 'warden@sentricom.com', '$2b$12$9ZOEGomya7Y4gFw1WHgXjOFtK3I8GuKhlSvMeKO7eLZmttaznXp9W', 'System Warden', 'warden'),
+            ('Roryadm', 'rory_adm@sentricom.com', '$2b$12$fgq3oXjO9UrxVkyZlSqvZuhCzikiizQ4hHifWct94H4yUMzo9NtFO', 'System Administrator', 'admin'),
+            ('Rorywar', 'rory_war@sentricom.com', '$2b$12$9ZOEGomya7Y4gFw1WHgXjOFtK3I8GuKhlSvMeKO7eLZmttaznXp9W', 'System Warden', 'warden'),
+            ('Richadm', 'rich_adm@sentricom.com', '$2b$12$fgq3oXjO9UrxVkyZlSqvZuhCzikiizQ4hHifWct94H4yUMzo9NtFO', 'System Administrator', 'admin'),
+            ('Richwar', 'rich_war@sentricom.com', '$2b$12$9ZOEGomya7Y4gFw1WHgXjOFtK3I8GuKhlSvMeKO7eLZmttaznXp9W', 'System Warden', 'warden'),
+            ('Zenaadm', 'zena_adm@sentricom.com', '$2b$12$fgq3oXjO9UrxVkyZlSqvZuhCzikiizQ4hHifWct94H4yUMzo9NtFO', 'System Administrator', 'admin'),
+            ('Zenawar', 'zena_war@sentricom.com', '$2b$12$9ZOEGomya7Y4gFw1WHgXjOFtK3I8GuKhlSvMeKO7eLZmttaznXp9W', 'System Warden', 'warden'),
+            ('Benadm', 'ben_adm@sentricom.com', '$2b$12$fgq3oXjO9UrxVkyZlSqvZuhCzikiizQ4hHifWct94H4yUMzo9NtFO', 'System Administrator', 'admin'),
+            ('Benwar', 'ben_war@sentricom.com', '$2b$12$9ZOEGomya7Y4gFw1WHgXjOFtK3I8GuKhlSvMeKO7eLZmttaznXp9W', 'System Warden', 'warden'),
+            ('Lukeadm', 'luke_adm@sentricom.com', '$2b$12$fgq3oXjO9UrxVkyZlSqvZuhCzikiizQ4hHifWct94H4yUMzo9NtFO', 'System Administrator', 'admin'),
+            ('Lukewar', 'luke_war@sentricom.com', '$2b$12$9ZOEGomya7Y4gFw1WHgXjOFtK3I8GuKhlSvMeKO7eLZmttaznXp9W', 'System Warden', 'warden');
     """)
 
     # api key for testing
