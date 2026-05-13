@@ -16,6 +16,7 @@ from app.services.pipeline_event_log_service import log_pipeline_event
 from pydantic import ValidationError
 
 
+
 router = APIRouter()
 
 # TODO - likely need also active, alarm_status, priority_persons, response_code fields for each zone

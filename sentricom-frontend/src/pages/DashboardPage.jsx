@@ -102,7 +102,6 @@ export default function DashboardPage() {
       title="Overview"
       subtitle="Real-time monitoring of crowd density across zones"
     >
-
       <div className="dashboard-grid-2">
 
         {/* Left column */}
