@@ -109,11 +109,14 @@ useEffect(() => {
 
              <option value="all">All Zones</option>
 
-                 {zones.map((zone) => (
-                 <option key={zone.id} value={zone.id}>
-                 {zone.zoneName}
-                </option>
-                ))}
+               {zones.map((zone) => (
+               <option
+               key={`${zone.id}-${zone.zoneName}`}
+               value={zone.id}
+                >
+              {zone.zoneName}
+              </option>
+              ))}
 
             </select> </div>
             {/* Report type selection */}
