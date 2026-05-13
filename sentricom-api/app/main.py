@@ -40,7 +40,7 @@ app.include_router(auth.router, prefix="/api/v1")
 app.include_router(occupancy.router, prefix="/api/v1")
 # Raw occupancy thin-slice demo bridge
 # - no prefix for now to preserve occupancy/testdata planned route
-app.include_router(occupancy.router) 
+app.include_router(occupancy.router)
 # DEBUG
 #for r in app.routes:
     #print(f"ROUTE: {r.name} -> {r.path} [{','.join(sorted(r.methods))}]")
