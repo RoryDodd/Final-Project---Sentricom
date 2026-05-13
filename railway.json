@@ -1,9 +1,9 @@
 {
   "build": {
-    "builder": "RAILPACK",
-    "buildCommand": "cd sentricom-api && pip install -r requirements.txt"
+    "builder": "NIXPACKS",
+    "buildCommand": "cd sentricom-api && python -m pip install -r requirements.txt"
   },
   "deploy": {
-    "startCommand": "cd sentricom-api && uvicorn main:app --host 0.0.0.0 --port $PORT"
+    "startCommand": "cd sentricom-api && python -m uvicorn main:app --host 0.0.0.0 --port $PORT"
   }
 }
