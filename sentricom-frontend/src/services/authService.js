@@ -8,6 +8,7 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 
 console.log("API KEY:", API_KEY);
 
+/*** LOGIN USER ***/
 export async function loginUser(identifier, password) {
   const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
     method: "POST",
@@ -30,5 +31,27 @@ export async function loginUser(identifier, password) {
   console.log("USER DATA:", data.user);
   saveSessionToken(data.session_token);
   localStorage.setItem("sentricom_role", data.user.role);
+  return data;
+}
+
+/*** LOGOUT USER ***/
+export async function logoutUser(sessionToken) {
+  const response = await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Session-Token": sessionToken,
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Logout failed");
+  }
+
+  const data = await response.json();
+  console.log("LOGOUT RESPONSE:", data);
+  console.log("USER DATA:", data.user);
+  removeSessionToken(data.session_token);
+  localStorage.removeItem("sentricom_role");
   return data;
 }

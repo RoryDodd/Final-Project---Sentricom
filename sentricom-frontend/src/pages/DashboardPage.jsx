@@ -11,6 +11,13 @@ import AlertPanel from "../components/AlertPanel";
 
 import { getSessionToken } from "../utils/auth";
 
+/* TODO:
+ * - make sure our constants are initialising empty - especially the data handlers for dashboard.
+ * - Consider implementing a token refresh mechanism if the API supports it, to handle expired tokens gracefully.
+ * - Add error handling for token retrieval failures, such as corrupted storage or missing token scenarios.
+ * - Track what data has previously been fetched - likely needs both client-side and server-side support - to optimize API calls and reduce unnecessary data fetching.
+*/
+
 /*** TOKEN HANDLING HELPER 
  * 
  * This helper function retrieves the session token from memory (ref) or storage.
@@ -18,12 +25,6 @@ import { getSessionToken } from "../utils/auth";
  * the token from storage and caches it in the ref for future use.
  * 
 ***/
-
-/* TODO:
- * - Consider implementing a token refresh mechanism if the API supports it, to handle expired tokens gracefully.
- * - Add error handling for token retrieval failures, such as corrupted storage or missing token scenarios.
- * - Track what data has previously been fetched - likely needs both client-side and server-side support - to optimize API calls and reduce unnecessary data fetching.
-*/
 function getTokenFromMemoryOrStorage(tokenRef) {
   if (tokenRef.current) {
     return tokenRef.current;
