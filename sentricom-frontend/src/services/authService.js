@@ -1,4 +1,4 @@
-import { saveSessionToken } from "../utils/auth";
+import { saveSessionToken, removeSessionToken } from "../utils/auth";
 
 
 const API_BASE_URL =
@@ -53,5 +53,5 @@ export async function logoutUser(sessionToken) {
   console.log("USER DATA:", data.user);
   removeSessionToken(data.session_token);
   localStorage.removeItem("sentricom_role");
-  return data;
+  //return data;
 }

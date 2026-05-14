@@ -34,13 +34,17 @@ export async function apiFetch(endpoint, options = {}, tokenOverride = null) {
 
     // Handle failed API requests
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
+      const text = await response.text();
+      const error = new Error(`API request failed: ${response.status} - ${text}`);
+      error.status = response.status;
+      error.body = text;
+      throw error;
     }
 
     return response.json();
   } 
   catch (error) {
-    console.error("Fetch error:", error);
-    throw new Error("Failed to fetch API data");
+    console.error("API Fetch error:", error);
+    throw error;
   }
 }

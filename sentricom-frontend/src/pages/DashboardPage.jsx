@@ -9,13 +9,15 @@ import SummaryTable from "../components/SummaryTable";
 import Heatmap from "../components/Heatmap";
 import AlertPanel from "../components/AlertPanel";
 
-import { getSessionToken } from "../utils/auth";
+import { getSessionToken, isLoggedIn } from "../utils/auth";
+
+import { useNavigate } from "react-router-dom";
 
 /* TODO:
- * - make sure our constants are initialising empty - especially the data handlers for dashboard.
  * - Consider implementing a token refresh mechanism if the API supports it, to handle expired tokens gracefully.
  * - Add error handling for token retrieval failures, such as corrupted storage or missing token scenarios.
  * - Track what data has previously been fetched - likely needs both client-side and server-side support - to optimize API calls and reduce unnecessary data fetching.
+ * - Possible bug in reports page with two child items with same key - need to add unique keys to all mapped items in that page
 */
 
 /*** TOKEN HANDLING HELPER 
@@ -47,6 +49,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const tokenRef = useRef(null);
+  const intervalRef = useRef(null);
+  const navigate = useNavigate();
 
   // Load dashboard data
   useEffect(() => {
@@ -57,9 +61,19 @@ export default function DashboardPage() {
       
       const sessionToken = getTokenFromMemoryOrStorage(tokenRef);
 
+      // If no token found, user is not authenticated - redirect to login
       if (!sessionToken) {
         setError("No active session found");
         setLoading(false);
+        navigate("/login");
+        return;
+      }
+
+      // If user not logged in, redirect to login page
+      if (!isLoggedIn()) {
+        setError("User not logged in");
+        setLoading(false);
+        navigate("/login");
         return;
       }
 
@@ -79,7 +93,15 @@ export default function DashboardPage() {
         if (isMounted) {
           if (err.message?.includes("401")) {
             setError("Session expired. Please login again.");
-          } else {
+            navigate("/login");
+          } 
+          else if (err.status === 401) {
+            clearInterval(intervalRef.current);
+            setError("Session expired. Please login again.");
+            navigate("/login");
+            return;
+          }
+          else {
             setError("Failed to load dashboard data");
           }
         }
