@@ -11,6 +11,21 @@ import AlertPanel from "../components/AlertPanel";
 
 import { getSessionToken } from "../utils/auth";
 
+// DEBUG HELPER
+function getTokenFromMemoryOrStorage(tokenRef) {
+  if (tokenRef.current) {
+    return tokenRef.current;
+  }
+
+  const storedToken = getSessionToken();
+
+  if (storedToken) {
+    tokenRef.current = storedToken;
+  }
+
+  return storedToken;
+}
+
 // Main dashboard page
 export default function DashboardPage() {
 
@@ -18,64 +33,84 @@ export default function DashboardPage() {
   const [zones, setZones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  //const [token, setToken] = useState("");
+  const tokenRef = useRef(null);
 
   // Prevent duplicate API calls in React StrictMode
-  const hasLoaded = useRef(false);
+  //const hasLoaded = useRef(false);
+
+  // Lets make sure we have a session token first
+  //const sessionToken = getSessionToken();
+  //setToken(sessionToken);
 
   // Load dashboard data
   useEffect(() => {
-
-    if (hasLoaded.current) return;
-
-    hasLoaded.current = true;
+    //debug
+    let isMounted = true; // while true
+    //if (hasLoaded.current) return;
+    //hasLoaded.current = true;
+    
+    // Cache the token in a ref to prevent stale closures in setInterval
+    //tokenRef.current = getSessionToken();
 
     async function loadData() {
+      
+      const sessionToken = getTokenFromMemoryOrStorage(tokenRef);
 
+      if (!sessionToken) {
+        setError("No active session found");
+        setLoading(false);
+        return;
+      }
+      
       try {
-
-        // Check for valid session token
-        const token = getSessionToken();
-
+        /*
         if (!token) {
           setError("No active session found");
           setLoading(false);
           return;
         }
-
+        */
         // Fetch and transform backend data
-        const rawData = await getDashboardZones();
+        const rawData = await getDashboardZones(sessionToken);
         const transformed = transformZoneResults(rawData);
 
-        setZones(transformed);
-        setError("");
-
+        if (isMounted) {
+          setZones(transformed);
+          setError("");
+        }
       } catch (err) {
-
         console.error(err);
 
-        if (err.message?.includes("401")) {
-          setError("Session expired. Please login again.");
-        } else {
-          setError("Failed to load dashboard data");
+        if (isMounted) {
+          if (err.message?.includes("401")) {
+            setError("Session expired. Please login again.");
+          } else {
+            setError("Failed to load dashboard data");
+          }
         }
-
       } finally {
-
+        if (isMounted) {
         setLoading(false);
-
       }
     }
+  }
 
     // Initial load
     loadData();
 
     // Auto refresh every 10 seconds
+    /*
     const interval = setInterval(() => {
       loadData();
     }, 10000);
+    */
+    const interval = setInterval(loadData, 5000);
 
-    return () => clearInterval(interval);
-
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // Loading screen
