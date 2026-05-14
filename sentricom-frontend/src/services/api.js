@@ -10,7 +10,7 @@ export async function apiFetch(endpoint, options = {}, tokenOverride = null) {
     const token = tokenOverride || getSessionToken();
 
     // Prevent API calls without authentication
-    if (!token) {
+    if (!token || token === "undefined") {
       throw new Error("Missing session token");
     }
 

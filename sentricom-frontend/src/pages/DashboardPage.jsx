@@ -62,7 +62,9 @@ export default function DashboardPage() {
       const sessionToken = getTokenFromMemoryOrStorage(tokenRef);
 
       // If no token found, user is not authenticated - redirect to login
-      if (!sessionToken) {
+      if (!sessionToken || sessionToken.trim() === "") {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
         setError("No active session found");
         setLoading(false);
         navigate("/login");
@@ -89,20 +91,23 @@ export default function DashboardPage() {
         }
       } catch (err) {
         console.error(err);
+        
+        if (!isMounted) return;
 
         if (isMounted) {
-          if (err.message?.includes("401")) {
-            setError("Session expired. Please login again.");
-            navigate("/login");
-          } 
-          else if (err.status === 401) {
+          if (err.status === 401 || err.message?.includes("401")) {
             clearInterval(intervalRef.current);
-            setError("Session expired. Please login again.");
+            intervalRef.current = null;
+            setError("Session token no longer valid or could not be retrieved. Please login again.");
             navigate("/login");
             return;
           }
           else {
-            setError("Failed to load dashboard data");
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            setError("Failed to load dashboard data. Please try use the logout button and login again. If the issue persists, contact support.");
+            //navigate("/login");
+            return;
           }
         }
       } finally {
@@ -116,11 +121,13 @@ export default function DashboardPage() {
     loadData();
 
     // Simplified polling call
-    const interval = setInterval(loadData, 5000);
+    //const interval = setInterval(loadData, 5000);
+    intervalRef.current = setInterval(loadData, 5000);
 
     return () => {
       isMounted = false;
-      clearInterval(interval);
+      //clearInterval(interval);
+      clearInterval(intervalRef.current);
     };
   }, []);
 
