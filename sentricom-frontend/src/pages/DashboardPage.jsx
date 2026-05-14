@@ -11,7 +11,19 @@ import AlertPanel from "../components/AlertPanel";
 
 import { getSessionToken } from "../utils/auth";
 
-// DEBUG HELPER
+/*** TOKEN HANDLING HELPER 
+ * 
+ * This helper function retrieves the session token from memory (ref) or storage.
+ * It first checks if the token is already cached in the ref. If not, it fetches
+ * the token from storage and caches it in the ref for future use.
+ * 
+***/
+
+/* TODO:
+ * - Consider implementing a token refresh mechanism if the API supports it, to handle expired tokens gracefully.
+ * - Add error handling for token retrieval failures, such as corrupted storage or missing token scenarios.
+ * - Track what data has previously been fetched - likely needs both client-side and server-side support - to optimize API calls and reduce unnecessary data fetching.
+*/
 function getTokenFromMemoryOrStorage(tokenRef) {
   if (tokenRef.current) {
     return tokenRef.current;
@@ -26,32 +38,19 @@ function getTokenFromMemoryOrStorage(tokenRef) {
   return storedToken;
 }
 
-// Main dashboard page
+/*** MAIN DASHBOARD LOGIC ***/
 export default function DashboardPage() {
 
   // Dashboard state
   const [zones, setZones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  //const [token, setToken] = useState("");
   const tokenRef = useRef(null);
-
-  // Prevent duplicate API calls in React StrictMode
-  //const hasLoaded = useRef(false);
-
-  // Lets make sure we have a session token first
-  //const sessionToken = getSessionToken();
-  //setToken(sessionToken);
 
   // Load dashboard data
   useEffect(() => {
-    //debug
+    // Using isMounted flag to prevent state updates on unmounted component during async operations
     let isMounted = true; // while true
-    //if (hasLoaded.current) return;
-    //hasLoaded.current = true;
-    
-    // Cache the token in a ref to prevent stale closures in setInterval
-    //tokenRef.current = getSessionToken();
 
     async function loadData() {
       
@@ -62,17 +61,11 @@ export default function DashboardPage() {
         setLoading(false);
         return;
       }
-      
+
+      // Fetch and transform backend data
       try {
-        /*
-        if (!token) {
-          setError("No active session found");
-          setLoading(false);
-          return;
-        }
-        */
-        // Fetch and transform backend data
-        const rawData = await getDashboardZones(sessionToken);
+        
+        const rawData = await getDashboardZones(sessionToken); // pass token since we've already computed it here
         const transformed = transformZoneResults(rawData);
 
         if (isMounted) {
@@ -99,12 +92,7 @@ export default function DashboardPage() {
     // Initial load
     loadData();
 
-    // Auto refresh every 10 seconds
-    /*
-    const interval = setInterval(() => {
-      loadData();
-    }, 10000);
-    */
+    // Simplified polling call
     const interval = setInterval(loadData, 5000);
 
     return () => {
@@ -131,6 +119,8 @@ export default function DashboardPage() {
     );
   }
 
+
+  /*** MAIN DASHBOARD PRESENTATION ***/
   return (
 
     <PageContainer
