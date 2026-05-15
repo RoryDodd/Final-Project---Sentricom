@@ -1,11 +1,16 @@
-__author__ = "R Dodd", "Richard Avery"
+__author__ = "R Dodd", "Richard Avery", "L Gardiner"
 __version__ = "2.0"
 __date__ = "2026"
 
-import time
+from health_server import start_health_thread, set_state, STATE
 from datetime import datetime
+from dotenv import load_dotenv
+load_dotenv()
+import time
 import api
 import dp_engine as dp
+import os
+
 
 # ---------------------------------------------------------------------------
 # Display
@@ -40,9 +45,19 @@ def display_results(original_data, dp_results):
 # ---------------------------------------------------------------------------
 
 def main():
+    # Start health check for external app snapshot
+    start_health_thread()
+    set_state("running", "Privacy engine loop started")
+    
+    host = os.getenv("HEALTH_HOST", "localhost")
+    port = os.getenv("HEALTH_PORT", "8034")
+    
+    display_host = "localhost" if host in ["0.0.0.0"] else host
+    # Start-Up Confirmation
     print("Privacy Engine - Fetching test data and applying differential privacy")
-    print(f"Data Source:  {api.EXTERNAL_API_URL}")
-    print(f"Ingest API:   {api.INGEST_API_URL}")
+    print(f"Initialising Health-Check at: http://{display_host}:{port}/health")
+    print(f"Data Source:  {api.EXTERNAL_API_URL + api.RETRIEVE_ENDPOINT}")
+    print(f"Ingest API:   {api.EXTERNAL_API_URL + api.POST_ENDPOINT}")
     print("-" * 80)
 
     batch_count = 0
@@ -53,6 +68,9 @@ def main():
         response = api.fetch_next_data()
 
         if not response:
+            # Health-check update
+            set_state("waiting", "Waiting for more data to be available")
+            # Console update
             print("\nWaiting for more data to be available.")
             time.sleep(5)
             continue
@@ -60,7 +78,9 @@ def main():
         batch_count += 1
         batch_id = response.get("batch_id", f"batch_{batch_count}")
         zones = response.get("zones", [])
-
+        # Health-Check update
+        set_state("processing", f"Processing batch {batch_id}")
+        # Console update
         print(f"\n[Batch {batch_count}] Received {len(zones)} zones (batch_id: {batch_id})")
 
         if not zones:
@@ -76,6 +96,11 @@ def main():
 
         # POST results to Vercel backend
         api.post_dp_results(batch_id, dp_results)
+        
+        # Health-Check tracking
+        STATE["batches_processed"] += 1
+        STATE["zones_processed"] += len(dp_results)
+        set_state("idle", f"Processed batch {batch_id}")
 
         # Wait before fetching next batch
         time.sleep(1.5)
