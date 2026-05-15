@@ -14,7 +14,7 @@ from app.services.pipeline_event_log_service import log_pipeline_event
 logger = logging.getLogger(__name__)
 
 RAW_OCCUPANCY_TTL_SECONDS = int(os.getenv("RAW_OCCUPANCY_TTL_SECONDS", "30"))
-RAW_OCCUPANCY_MAX_BATCHES = int(os.getenv("RAW_OCCUPANCY_MAX_BATCHES", "10"))
+RAW_OCCUPANCY_MAX_BATCHES = int(os.getenv("RAW_OCCUPANCY_MAX_BATCHES", "25"))
 
 # Used for in memory buffering of raw occupancy records before they are processed and stored in the DB
 class RawOccupancyBatch(object):
