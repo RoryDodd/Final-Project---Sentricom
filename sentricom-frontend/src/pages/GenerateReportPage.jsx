@@ -9,20 +9,26 @@ import Card from "../components/Card";
 import { useEffect } from "react";
 import { getDashboardZones } from "../services/dashboardService";
 
+import { apiFetch } from "../services/api";
+
 // GenerateReportPage allows users to configure and preview report options
 export default function GenerateReportPage() {
-  // Store form input values for report generation
-  const [formData, setFormData] = useState({
+
   
-    startDate: "",
-    endDate: "",
-    zone: "all",
-    reportType: "occupancy",
-    format: "pdf",
-  });
+  
+// Store form input values for report generation
+ const [formData, setFormData] = useState({
+  startDate: "",
+  endDate: "",
+  zone: "all",
+  reportType: "occupancy",
+});
 
   const [zones, setZones] = useState([]);
-useEffect(() => {
+  const [report, setReport] = useState(null);
+  const [error, setError] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  useEffect(() => {
 
   async function loadZones() {
     try {
@@ -50,20 +56,46 @@ useEffect(() => {
     }));
   };
 
-  // Handle form submission
-  const handleGenerate = (event) => {
-    event.preventDefault(); // Prevent page reload on submit
+  const handleGenerate = async (event) => {
+  event.preventDefault();
 
-    // Placeholder logic until backend integration is added
-    console.log("Generate report with:", formData);
-    alert("Report generation will be connected to the backend later.");
-  };
+  setError("");
+  setReport(null);
+  setIsGenerating(true);
+
+  try {
+    const params = new URLSearchParams({
+      start_date: formData.startDate,
+      end_date: formData.endDate,
+      zone_id: formData.zone,
+      report_type: formData.reportType,
+    });
+
+    const data = await apiFetch(`/api/v1/reports/generate?${params}`, {
+      includeContentType: false,
+    });
+
+    setReport(data);
+    console.log("Generated report:", data);
+  } catch (err) {
+    console.error(err);
+
+    if (err.status === 401) {
+      setError("Session expired. Please log in again.");
+    } else {
+      setError("Failed to generate report. Please try again.");
+    }
+  } finally {
+    setIsGenerating(false);
+  }
+};
 
   return (
     // Page layout wrapper with heading and subtitle
     <PageContainer
       title="Generate Report"
-      subtitle="Create downloadable occupancy and incident reports by date, zone, and format"
+      subtitle="Generate reports by date range and zone"
+
     >
       {/* Two-column layout: form settings + live preview */}
       <div className="report-grid">
@@ -98,24 +130,21 @@ useEffect(() => {
             </div>
 
             {/* Zone selection */}
-            <div className="form-group">
-              <label htmlFor="zone">Zone</label>
-              <select
-              id="zone"
-              name="zone"
-              value={formData.zone}
-              onChange={handleChange}
-            >
+               <div className="form-group">
+                <label htmlFor="zone">Zone</label>
+                <select
+                 id="zone"
+                 name="zone"
+                 value={formData.zone}
+                 onChange={handleChange}
+               >
 
              <option value="all">All Zones</option>
 
-               {zones.map((zone) => (
-               <option
-               key={`${zone.id}-${zone.zoneName}`}
-               value={zone.id}
-                >
-              {zone.zoneName}
-              </option>
+              {zones.map((zone) => (
+                <option key={zone.zone_id} value={zone.zone_id}>
+                {zone.zone_name}
+                </option>
               ))}
 
             </select> </div>
@@ -135,25 +164,13 @@ useEffect(() => {
               </select>
             </div>
 
-            {/* Output format selection */}
-            <div className="form-group">
-              <label htmlFor="format">Output Format</label>
-              <select
-                id="format"
-                name="format"
-                value={formData.format}
-                onChange={handleChange}
-              >
-                <option value="pdf">PDF</option>
-                <option value="csv">CSV</option>
-                <option value="json">JSON</option>
-              </select>
-            </div>
-
             {/* Submit button */}
-            <button type="submit" className="primary-button">
-              Generate Report
-            </button>
+              <button type="submit" className="primary-button" disabled={isGenerating}>
+                {isGenerating ? "Generating..." : "Generate Report"}
+              </button>
+
+                {error && <p style={{ color: "red" }}>{error}</p>}
+
           </form>
         </Card>
 
@@ -172,8 +189,8 @@ useEffect(() => {
             </div>
 
             <div className="preview-item">
-              <span className="preview-label">Format</span>
-              <span className="preview-value">{formData.format}</span>
+              <span className="preview-label">Export Type</span>
+              <span className="preview-value">JSON Report</span>
             </div>
 
             <div className="preview-item">
@@ -185,10 +202,12 @@ useEffect(() => {
               </span>
             </div>
 
-            {/* Placeholder note for future backend preview functionality */}
-            <div className="report-note">
-              This panel can later show a backend-generated summary, estimated file size, or a mini preview before download.
-            </div>
+            {report && (
+              <pre className="report-note">
+                {JSON.stringify(report, null, 2)}
+              </pre>
+            )}
+
           </div>
         </Card>
 
