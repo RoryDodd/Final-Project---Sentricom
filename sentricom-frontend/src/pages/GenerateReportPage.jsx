@@ -9,8 +9,12 @@ import Card from "../components/Card";
 import { useEffect } from "react";
 import { getDashboardZones } from "../services/dashboardService";
 
+import { apiFetch } from "../services/api";
+
 // GenerateReportPage allows users to configure and preview report options
 export default function GenerateReportPage() {
+
+  
   
 // Store form input values for report generation
  const [formData, setFormData] = useState({
@@ -21,6 +25,9 @@ export default function GenerateReportPage() {
 });
 
   const [zones, setZones] = useState([]);
+  const [report, setReport] = useState(null);
+  const [error, setError] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
   useEffect(() => {
 
   async function loadZones() {
@@ -49,20 +56,46 @@ export default function GenerateReportPage() {
     }));
   };
 
-  // Handle form submission
-  const handleGenerate = (event) => {
-    event.preventDefault(); // Prevent page reload on submit
+  const handleGenerate = async (event) => {
+  event.preventDefault();
 
-    // Placeholder logic until backend integration is added
-    console.log("Generate report with:", formData);
-    alert("Report generation will be connected to the backend later.");
-  };
+  setError("");
+  setReport(null);
+  setIsGenerating(true);
+
+  try {
+    const params = new URLSearchParams({
+      start_date: formData.startDate,
+      end_date: formData.endDate,
+      zone_id: formData.zone,
+      report_type: formData.reportType,
+    });
+
+    const data = await apiFetch(`/api/v1/reports/generate?${params}`, {
+      includeContentType: false,
+    });
+
+    setReport(data);
+    console.log("Generated report:", data);
+  } catch (err) {
+    console.error(err);
+
+    if (err.status === 401) {
+      setError("Session expired. Please log in again.");
+    } else {
+      setError("Failed to generate report. Please try again.");
+    }
+  } finally {
+    setIsGenerating(false);
+  }
+};
 
   return (
     // Page layout wrapper with heading and subtitle
     <PageContainer
       title="Generate Report"
-      subtitle="Generate downloadable PDF reports by date range and zone"
+      subtitle="Generate reports by date range and zone"
+
     >
       {/* Two-column layout: form settings + live preview */}
       <div className="report-grid">
@@ -108,13 +141,10 @@ export default function GenerateReportPage() {
 
              <option value="all">All Zones</option>
 
-               {zones.map((zone) => (
-               <option
-               key={`${zone.id}-${zone.zoneName}`}
-               value={zone.id}
-                >
-              {zone.zoneName}
-              </option>
+              {zones.map((zone) => (
+                <option key={zone.zone_id} value={zone.zone_id}>
+                {zone.zone_name}
+                </option>
               ))}
 
             </select> </div>
@@ -135,9 +165,12 @@ export default function GenerateReportPage() {
             </div>
 
             {/* Submit button */}
-            <button type="submit" className="primary-button">
-              Generate Report
-            </button>
+              <button type="submit" className="primary-button" disabled={isGenerating}>
+                {isGenerating ? "Generating..." : "Generate Report"}
+              </button>
+
+                {error && <p style={{ color: "red" }}>{error}</p>}
+
           </form>
         </Card>
 
@@ -157,7 +190,7 @@ export default function GenerateReportPage() {
 
             <div className="preview-item">
               <span className="preview-label">Export Type</span>
-              <span className="preview-value">PDF Report</span>
+              <span className="preview-value">JSON Report</span>
             </div>
 
             <div className="preview-item">
@@ -169,10 +202,12 @@ export default function GenerateReportPage() {
               </span>
             </div>
 
-            {/* Placeholder note for future backend preview functionality */}
-            <div className="report-note">
-              This panel can later show a backend-generated summary, estimated file size, or a mini preview before download.
-            </div>
+            {report && (
+              <pre className="report-note">
+                {JSON.stringify(report, null, 2)}
+              </pre>
+            )}
+
           </div>
         </Card>
 
