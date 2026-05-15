@@ -106,7 +106,6 @@ export default function DashboardPage() {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
             setError("Failed to load dashboard data. Please try use the logout button and login again. If the issue persists, contact support.");
-            //navigate("/login");
             return;
           }
         }
@@ -120,8 +119,7 @@ export default function DashboardPage() {
     // Initial load
     loadData();
 
-    // Simplified polling call
-    //const interval = setInterval(loadData, 5000);
+    // Simplified polling call - interval ref used to ensure we can stop the loading loop immediately if token is invalid or user logs out, without waiting for next tick
     intervalRef.current = setInterval(loadData, 5000);
 
     return () => {
