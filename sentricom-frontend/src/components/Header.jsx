@@ -13,6 +13,7 @@ const tabs = [
   { label: "Overview", path: "/dashboard" },
   { label: "Generate Report", path: "/generate" },
   { label: "Profile", path: "/profile" },
+  { label: "System Info", path: "/systeminfo" },
 
   // Admin-only navigation tab
   ...(localStorage.getItem("sentricom_role") === "admin"

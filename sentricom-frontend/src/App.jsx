@@ -10,6 +10,7 @@ import GenerateReportPage from "./pages/GenerateReportPage";
 import ProfilePage from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
+import SystemInfoPage from "./pages/SystemInfoPage";
 
 // Route protection
 import AdminRoute from "./components/AdminRoute";
@@ -51,6 +52,16 @@ function App() {
         element={
           <MainLayout>
             <ProfilePage />
+          </MainLayout>
+        }
+      />
+
+      {/* System Info */}
+      <Route
+        path="/systeminfo"
+        element={
+          <MainLayout>
+            <SystemInfoPage />
           </MainLayout>
         }
       />
