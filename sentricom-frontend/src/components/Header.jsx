@@ -1,5 +1,7 @@
 // Header with navigation and logout
 import { useNavigate, useLocation } from "react-router-dom";
+import { logoutUser } from "../services/authService";
+import { getSessionToken } from "../utils/auth";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -19,7 +21,16 @@ const tabs = [
 ];
 
   // Logout handler
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const sessionToken = getSessionToken();
+
+    if (sessionToken) {
+      try {
+        await logoutUser(sessionToken);
+      } catch (error) {
+        console.error("Logout failed:", error);
+      }
+    }
 
   localStorage.removeItem("sentricom_session_token");
   localStorage.removeItem("sentricom_role");

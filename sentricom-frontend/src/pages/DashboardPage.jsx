@@ -9,73 +9,124 @@ import SummaryTable from "../components/SummaryTable";
 import Heatmap from "../components/Heatmap";
 import AlertPanel from "../components/AlertPanel";
 
-import { getSessionToken } from "../utils/auth";
+import { getSessionToken, isLoggedIn } from "../utils/auth";
 
-// Main dashboard page
+import { useNavigate } from "react-router-dom";
+
+/* TODO:
+ * - Consider implementing a token refresh mechanism if the API supports it, to handle expired tokens gracefully.
+ * - Add error handling for token retrieval failures, such as corrupted storage or missing token scenarios.
+ * - Track what data has previously been fetched - likely needs both client-side and server-side support - to optimize API calls and reduce unnecessary data fetching.
+ * - Possible bug in reports page with two child items with same key - need to add unique keys to all mapped items in that page
+*/
+
+/*** TOKEN HANDLING HELPER 
+ * 
+ * This helper function retrieves the session token from memory (ref) or storage.
+ * It first checks if the token is already cached in the ref. If not, it fetches
+ * the token from storage and caches it in the ref for future use.
+ * 
+***/
+function getTokenFromMemoryOrStorage(tokenRef) {
+  if (tokenRef.current) {
+    return tokenRef.current;
+  }
+
+  const storedToken = getSessionToken();
+
+  if (storedToken) {
+    tokenRef.current = storedToken;
+  }
+
+  return storedToken;
+}
+
+/*** MAIN DASHBOARD LOGIC ***/
 export default function DashboardPage() {
 
   // Dashboard state
   const [zones, setZones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // Prevent duplicate API calls in React StrictMode
-  const hasLoaded = useRef(false);
+  const tokenRef = useRef(null);
+  const intervalRef = useRef(null);
+  const navigate = useNavigate();
 
   // Load dashboard data
   useEffect(() => {
-
-    if (hasLoaded.current) return;
-
-    hasLoaded.current = true;
+    // Using isMounted flag to prevent state updates on unmounted component during async operations
+    let isMounted = true; // while true
 
     async function loadData() {
+      
+      const sessionToken = getTokenFromMemoryOrStorage(tokenRef);
 
+      // If no token found, user is not authenticated - redirect to login
+      if (!sessionToken || sessionToken.trim() === "") {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+        setError("No active session found");
+        setLoading(false);
+        navigate("/login");
+        return;
+      }
+
+      // If user not logged in, redirect to login page
+      if (!isLoggedIn()) {
+        setError("User not logged in");
+        setLoading(false);
+        navigate("/login");
+        return;
+      }
+
+      // Fetch and transform backend data
       try {
-
-        // Check for valid session token
-        const token = getSessionToken();
-
-        if (!token) {
-          setError("No active session found");
-          setLoading(false);
-          return;
-        }
-
-        // Fetch and transform backend data
-        const rawData = await getDashboardZones();
+        
+        const rawData = await getDashboardZones(sessionToken); // pass token since we've already computed it here
         const transformed = transformZoneResults(rawData);
 
-        setZones(transformed);
-        setError("");
-
-      } catch (err) {
-
-        console.error(err);
-
-        if (err.message?.includes("401")) {
-          setError("Session expired. Please login again.");
-        } else {
-          setError("Failed to load dashboard data");
+        if (isMounted) {
+          setZones(transformed);
+          setError("");
         }
+      } catch (err) {
+        console.error(err);
+        
+        if (!isMounted) return;
 
+        if (isMounted) {
+          if (err.status === 401 || err.message?.includes("401")) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            setError("Session token no longer valid or could not be retrieved. Please login again.");
+            navigate("/login");
+            return;
+          }
+          else {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            setError("Failed to load dashboard data. Please try use the logout button and login again. If the issue persists, contact support.");
+            return;
+          }
+        }
       } finally {
-
+        if (isMounted) {
         setLoading(false);
-
       }
     }
+  }
 
     // Initial load
     loadData();
 
-    // Auto refresh every 10 seconds
-    const interval = setInterval(() => {
-      loadData();
-    }, 10000);
+    // Simplified polling call - interval ref used to ensure we can stop the loading loop immediately if token is invalid or user logs out, without waiting for next tick
+    intervalRef.current = setInterval(loadData, 5000);
 
-    return () => clearInterval(interval);
-
+    return () => {
+      isMounted = false;
+      //clearInterval(interval);
+      clearInterval(intervalRef.current);
+    };
   }, []);
 
   // Loading screen
@@ -96,6 +147,8 @@ export default function DashboardPage() {
     );
   }
 
+
+  /*** MAIN DASHBOARD PRESENTATION ***/
   return (
 
     <PageContainer
