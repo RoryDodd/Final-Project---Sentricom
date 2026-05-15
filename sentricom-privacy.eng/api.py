@@ -14,17 +14,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # External API Base and Endpoint to retrieve test data
-# (Simulates data from sensor nodes)
-#EXTERNAL_API_URL = "https://afert-umber.vercel.app/occupancy/testdata/next"
+# (Input data from sensor nodes)
 EXTERNAL_API_URL = os.getenv("EXTERNAL_API_URL_BASE")
 RETRIEVE_ENDPOINT = "/occupancy/testdata/next"
 
 # API Base and Endpoint to POST DP-processed results to
-#INGEST_API_URL = "https://afert-umber.vercel.app/api/v1/zones/latest"
-#INGEST_API_URL = os.getenv("INGEST_API_URL_BASE")
 POST_ENDPOINT = "/api/v1/zones/latest"
 
-#API_KEY = "2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa"
 API_KEY = os.getenv("API_KEY")
 
 headers = {
