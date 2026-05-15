@@ -53,8 +53,8 @@ class HealthHandler(BaseHTTPRequestHandler):
 # Run Controls
 # ---------------------------------------------------------------------------
 def start_health_server():
-    host = os.getenv("HEALTH_HOST", "0.0.0.0")
-    port = int(os.getenv("HEALTH_PORT", "8034"))
+    host = os.getenv("HEALTH_HOST", "::")
+    port = int(os.getenv("HEALTH_PORT", "8032"))
     
     server = ThreadingHTTPServer((host, port), HealthHandler)
     server.serve_forever()
