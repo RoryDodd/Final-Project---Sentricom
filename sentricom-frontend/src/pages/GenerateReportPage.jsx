@@ -11,18 +11,17 @@ import { getDashboardZones } from "../services/dashboardService";
 
 // GenerateReportPage allows users to configure and preview report options
 export default function GenerateReportPage() {
-  // Store form input values for report generation
-  const [formData, setFormData] = useState({
   
-    startDate: "",
-    endDate: "",
-    zone: "all",
-    reportType: "occupancy",
-    format: "pdf",
-  });
+// Store form input values for report generation
+ const [formData, setFormData] = useState({
+  startDate: "",
+  endDate: "",
+  zone: "all",
+  reportType: "occupancy",
+});
 
   const [zones, setZones] = useState([]);
-useEffect(() => {
+  useEffect(() => {
 
   async function loadZones() {
     try {
@@ -63,7 +62,7 @@ useEffect(() => {
     // Page layout wrapper with heading and subtitle
     <PageContainer
       title="Generate Report"
-      subtitle="Create downloadable occupancy and incident reports by date, zone, and format"
+      subtitle="Generate downloadable PDF reports by date range and zone"
     >
       {/* Two-column layout: form settings + live preview */}
       <div className="report-grid">
@@ -98,14 +97,14 @@ useEffect(() => {
             </div>
 
             {/* Zone selection */}
-            <div className="form-group">
-              <label htmlFor="zone">Zone</label>
-              <select
-              id="zone"
-              name="zone"
-              value={formData.zone}
-              onChange={handleChange}
-            >
+               <div className="form-group">
+                <label htmlFor="zone">Zone</label>
+                <select
+                 id="zone"
+                 name="zone"
+                 value={formData.zone}
+                 onChange={handleChange}
+               >
 
              <option value="all">All Zones</option>
 
@@ -135,21 +134,6 @@ useEffect(() => {
               </select>
             </div>
 
-            {/* Output format selection */}
-            <div className="form-group">
-              <label htmlFor="format">Output Format</label>
-              <select
-                id="format"
-                name="format"
-                value={formData.format}
-                onChange={handleChange}
-              >
-                <option value="pdf">PDF</option>
-                <option value="csv">CSV</option>
-                <option value="json">JSON</option>
-              </select>
-            </div>
-
             {/* Submit button */}
             <button type="submit" className="primary-button">
               Generate Report
@@ -172,8 +156,8 @@ useEffect(() => {
             </div>
 
             <div className="preview-item">
-              <span className="preview-label">Format</span>
-              <span className="preview-value">{formData.format}</span>
+              <span className="preview-label">Export Type</span>
+              <span className="preview-value">PDF Report</span>
             </div>
 
             <div className="preview-item">
