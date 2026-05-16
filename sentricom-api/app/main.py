@@ -6,6 +6,8 @@ from app.api.v1.routes import zones
 from app.api.v1.routes import auth
 from app.api.v1.routes import occupancy
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+load_dotenv()
 import os
 
 app = FastAPI()

@@ -1,20 +1,27 @@
-__author__ = "R Dodd"
-__version__ = "2.0"
+__author__ = "R Dodd, L Gardiner"
+__version__ = "2.1"
 __date__ = "2026"
 
 import requests
+import os
+from dotenv import load_dotenv
 
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
 
-# External API to retrieve test data
-EXTERNAL_API_URL = "https://afert-umber.vercel.app/occupancy/testdata/next"
+# Load API endpoint base from file
+load_dotenv()
 
-# Endpoint to POST DP-processed results to
-INGEST_API_URL = "https://afert-umber.vercel.app/api/v1/zones/latest"
+# External API Base and Endpoint to retrieve test data
+# (Input data from sensor nodes)
+EXTERNAL_API_URL = os.getenv("EXTERNAL_API_URL_BASE")
+RETRIEVE_ENDPOINT = "/occupancy/testdata/next"
 
-API_KEY = "2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa"
+# API Base and Endpoint to POST DP-processed results to
+POST_ENDPOINT = "/api/v1/zones/latest"
+
+API_KEY = os.getenv("API_KEY")
 
 headers = {
     "X-API-Key": API_KEY,
@@ -49,7 +56,7 @@ DEFAULT_DP_CONFIG = {
 def fetch_next_data():
     """Fetch next batch of test data from the external API."""
     try:
-        res = requests.get(EXTERNAL_API_URL, headers=headers, timeout=10)
+        res = requests.get(EXTERNAL_API_URL + RETRIEVE_ENDPOINT, headers=headers, timeout=10)
         res.raise_for_status()
         return res.json()
     except requests.exceptions.HTTPError as e:
@@ -85,7 +92,7 @@ def post_dp_results(batch_id, dp_results):
 ]
 
     try:
-        res = requests.put(INGEST_API_URL, json=payload, headers=headers, timeout=10)
+        res = requests.put(EXTERNAL_API_URL + POST_ENDPOINT, json=payload, headers=headers, timeout=10)
         res.raise_for_status()
         print(f"  ✓ Sent batch {batch_id} ({len(payload)} zones) → {res.status_code} {res.json()}")
         return res.json()
