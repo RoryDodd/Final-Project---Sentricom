@@ -46,76 +46,115 @@ export default function SystemInfoPage() {
       title="System Info"
       subtitle="Live system health and service status"
     >
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <div style={{ width: "100%", maxWidth: "800px" }}>
 
-      <div className="dashboard-grid-2">
+          {/* Sentricom System Health-Check */}
+          <Card title="Sentricom System Health-Check">
 
-        <Card title="API Health">
-
-            <button
-              onClick={fetchHealth}
-              style={{
-                marginBottom: "12px",
-                padding: "8px 12px",
-                borderRadius: "6px",
-                cursor: "pointer",
-              }}
-            >
-              Refresh
-            </button>
-
-          {loading && <p>Loading...</p>}
-
-          {error && (
-            <p style={{ color: "red" }}>
-              Error: {error}
-            </p>
-          )}
-
-          {healthData && (
-            <>
-              <p>
-                Status:{" "}
-                <strong
-                  style={{
-                    color: healthData?.status?.includes("passed")
-                      ? "green"
-                      : "red",
-                  }}
-                >
-                  {healthData.status}
-                </strong>
+            {error && (
+              <p style={{ color: "red" }}>
+                Error: {error}
               </p>
+            )}
 
-              <p>
-                Privacy Engine:{" "}
-                <strong
-                  style={{
-                    color: healthData?.check_results?.privacy_engine_reachable
-                      ? "green"
-                      : "red",
-                  }}
+            {/* Health-Check Results */}
+            {healthData && (
+              <>
+                <p>
+                  Status:{" "}
+                  <strong
+                    style={{
+                      color: healthData?.status?.includes("passed")
+                        ? "green"
+                        : "red",
+                    }}
+                  >
+                    {healthData.status}
+                  </strong>
+                </p>
+
+                <table
+                  className="summary-table"
+                  style={{ width: "100%", marginTop: "8px" }}
                 >
-                  {healthData?.check_results?.privacy_engine_reachable
-                    ? "Online"
-                    : "Offline"}
-                </strong>
-              </p>
+                  <thead>
+                    <tr>
+                      <th>Check</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
 
-              <pre
-                style={{
-                  fontSize: "12px",
-                  background: "#f5f5f5",
-                  padding: "10px",
-                  borderRadius: "8px",
-                  overflowX: "auto",
-                }}
-              >
-                {JSON.stringify(healthData, null, 2)}
-              </pre>
-            </>
-          )}
+                  <tbody> 
+                    {/* Populate table dynamically based on booleand health checks */}
+                    {Object.entries(healthData.check_results)
+                      .filter(([, value]) => typeof value === "boolean")
+                      .map(([key, value]) => (
+                        <tr key={key}>
+                          <td>{key}</td>
+                          <td>
+                            <strong style={{ color: value ? "green" : "red" }}>
+                              {value ? "PASS" : "FAIL"}
+                            </strong>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
 
-        </Card>
+                {/* Expanded privacy engine health and status */}
+                {healthData.check_results.privacy_engine && (
+                  <div style={{ marginTop: "8px" }}>
+                    <h3>Privacy Engine App</h3>
+
+                    <table
+                      className="summary-table"
+                      style={{ width: "100%"}}
+                    >
+                      <tbody>
+                        {/* Dynamically filter results specific to privacy engine */}
+                        {Object.entries(
+                          healthData.check_results.privacy_engine
+                        ).map(([key, value]) => (
+                          <tr key={key}>
+                            <td>{key}</td>
+                            <td>
+                              {typeof value === "boolean" 
+                                ? value
+                                  ? "true"
+                                  : "false"
+                                : String(value)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Manually refresh healthcheck data */}
+                <div style={{ marginTop: "8px" }}>
+                  <button
+                    onClick={fetchHealth}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Refresh
+                  </button>
+
+                  {loading && (
+                    <span style={{ marginLeft: "10px", fontSize: "13px", color: "#666" }}>
+                      Loading...
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
+          </Card>
+        </div>
       </div>
     </PageContainer>
   );
