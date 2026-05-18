@@ -4,7 +4,7 @@ import os
 import time
 import requests
 from scenario_engine import ScenarioEngine
-from scenario_server import set_state, STATE
+from scenario_state import set_state, STATE
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 load_dotenv()
@@ -163,7 +163,7 @@ def run_scenario(scenario_type="fire", steps=25, delay=1):
                 try:
                     response_data = res.json()
                 except Exception as e:
-                    response_data = response.txt
+                    response_data = response.text
                     
             except Exception as e:
                 response_data = {"error": str(e)}

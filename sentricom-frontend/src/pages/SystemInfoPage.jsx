@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 // Shared layout components
 import PageContainer from "../components/PageContainer";
 import Card from "../components/Card";
+
+import { getPrivEngHealth } from "../services/systemInfoService";
+
 // Healthcheck page - could also contain other config
 export default function SystemInfoPage() {
 
@@ -22,14 +25,7 @@ export default function SystemInfoPage() {
     setError(null);
 
     try {
-      //const response = await fetch("/api/v1/health", {
-      const response = await fetch("http://localhost:8082/api/v1/health", {
-        headers: {
-          "X-API-Key": "2a92652f69031a93302e5ec20f0758a9f364e7206b300fa027118f2d71a1e7aa"
-        },
-      });
-
-      const data = await response.json();
+      const data = await getPrivEngHealth();
       setHealthData(data);
     }
     catch (err) {

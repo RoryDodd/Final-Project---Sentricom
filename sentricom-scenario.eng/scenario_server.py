@@ -3,32 +3,15 @@
 import json
 import os
 import settings
-
-from http.server import BaseHTTPReuestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from scenario_client import run_scenario
+from scenario_state import STATE, set_state
 
 # ---------------------------------------------------------------------------
 # Health Output Message Model
 # ---------------------------------------------------------------------------
 
-STATE = {
-    "status": "starting",
-    "last_message": "Scenario simulator starting",
-    "last_seen_at" : None,
-    "active_scenario": "None",
-    "Event": "None",
-    "steps_requested": 0,
-    "steps_completed": 0,
-    "zones_generated": 0,
-    "summary_status": None,
-    
-}
 
-def set_state(status, message=None):
-    STATE["status"] = status
-    STATE["last_seen_at"] = datetime.now(timezone.utc).isoformat()
-    if message:
-        STATE["last_message"] = message
 
 # ---------------------------------------------------------------------------
 # Request Handler
@@ -42,18 +25,24 @@ class SimulatorHandler(BaseHTTPRequestHandler):
             self.end_headers()
             return
             
-        body = json.dumps({
+        response_body = json.dumps({
             "ok": True,
             "service": settings.SERVICE_NAME,
             "service_version": settings.SERVICE_VERSION,
             **STATE,
         }).encode("utf-8")
             
-            
+        '''    
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+        '''
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(response_body)))
+        self.end_headers()
+        self.wfile.write(response_body)
         
     # Zones Post endpoint - kicks off simulator run
     def do_POST(self):
@@ -75,12 +64,12 @@ class SimulatorHandler(BaseHTTPRequestHandler):
             # Run Scenario Simulator
             result = run_scenario(scenario_type=scenario, steps=steps, delay=delay)
             
-            response = json.dumps(result).encode("utf-8")
+            response_body = json.dumps(result).encode("utf-8")
             self.send_response(200)
             
         except Exception as e:
             set_state("error", f"Scenario run failed: {e}")
-            response = json.dumps({
+            response_body = json.dumps({
                 "ok": False,
                 "error": str(e)
             }).encode("utf-8")
