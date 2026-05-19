@@ -15,12 +15,12 @@ export function transformZoneResults(data) {
     timestamp: item.timestamp || null,
   }));
   
-  function normalizeStatus(value) {
-  const status = String(value || "low").toUpperCase();
+ function normalizeStatus(value) {
+  const status = String(value || "safe").toUpperCase();
 
-  if (status.includes("HIGH")) return "HIGH";
-  if (status.includes("MEDIUM")) return "MEDIUM";
-  if (status.includes("LOW")) return "LOW";
+  if (status.includes("EVACUATE") || status.includes("HIGH")) return "EVACUATE";
+  if (status.includes("MONITOR") || status.includes("MEDIUM")) return "MONITOR";
+  if (status.includes("SAFE") || status.includes("LOW")) return "SAFE";
 
   return "UNKNOWN";
 }
