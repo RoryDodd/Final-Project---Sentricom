@@ -11,6 +11,7 @@ from app.schemas.zones import (
     ZoneLatest,
     PrivacyZoneReadingIn,
     ZoneBatchWriteResponse,
+    ZoneUpdatesResponse,
 )
 from app.services.pipeline_event_log_service import log_pipeline_event
 from pydantic import ValidationError
@@ -156,6 +157,7 @@ def get_all_latest_zones():
     """
     sql = """
         SELECT
+            r.reading_id,
             z.zone_id,
             z.zone_name,
             z.capacity,
@@ -179,6 +181,7 @@ def get_all_latest_zones():
     result = []
     for r in rec:
         result.append({
+            "reading_id": r.get("reading_id"),
             "timestamp": r.get("reading_timestamp"),
             "zone_id": r["zone_id"],
             "zone_name": r["zone_name"],
@@ -190,13 +193,68 @@ def get_all_latest_zones():
         })
     return result
 
+# ----- Get /zones/updates (Cursor tracked append batch) ----- #
+@router.get("/zones/updates", response_model=ZoneUpdatesResponse, dependencies=[Depends(require_session)])
+def get_zone_updates(after_reading_id: int = 0, limit: int = 100):
+    """
+    Return append-log style zone updates newer than after_reading_id.
+    Return zone updates using append that are newer than provided reading_id cursor, ordered by reading_id ascending.
+
+    This endpoint is for client delta polling. It does not track delivery
+    Enables client delat polling and does not track a delivery state
+    server-side; the client is responisble for tracking its cursor..
+    """
+    safe_limit = max(1, min(limit, 1000))
+
+    sql = """
+        SELECT
+            r.reading_id,
+            r.zone_id,
+            z.zone_name,
+            z.capacity,
+            z.risk_status,
+            r.noisy_count AS dp_count,
+            r.confidence,
+            r.zone_state,
+            r.timestamp AS reading_timestamp
+        FROM occupancy_readings r
+        JOIN zones z
+            ON z.zone_id = r.zone_id
+        WHERE r.reading_id > ?
+        ORDER BY r.reading_id ASC
+        LIMIT ?
+    """
+
+    rows = fetch_all(sql, (after_reading_id, safe_limit))
+
+    items = []
+    for r in rows:
+        items.append({
+            "reading_id": r["reading_id"],
+            "timestamp": r.get("reading_timestamp"),
+            "zone_id": r["zone_id"],
+            "zone_name": r["zone_name"],
+            "dp_count": r.get("dp_count"),
+            "capacity": r.get("capacity"),
+            "risk_status": r.get("risk_status"),
+            "confidence": r.get("confidence"),
+            "zone_state": r.get("zone_state"),
+        })
+
+    next_cursor = items[-1]["reading_id"] if items else after_reading_id
+
+    return {
+        "items": items,
+        "next_cursor": next_cursor,
+    }
+
 # ----- Get /zones/latest/{zone_id} (Single) ----- #
 @router.get("/zones/latest/{zone_id}", response_model=ZoneLatest, dependencies=[Depends(require_session)])
-#def get_latest_zone(zone_id: int, auth=Depends(require_api_key)):
 def get_latest_zone(zone_id: int):
     """Return the latest data for a single zone by ID"""
     sql = """
         SELECT
+            r.reading_id,
             z.zone_id,
             z.zone_name,
             z.capacity,
@@ -222,6 +280,7 @@ def get_latest_zone(zone_id: int):
         raise HTTPException(status_code=404, detail="Zone not found")
     
     return {
+        "reading_id": rec.get("reading_id"),
         "timestamp": rec.get("reading_timestamp"),
         "zone_id": rec["zone_id"],
         "zone_name": rec["zone_name"],
@@ -364,80 +423,6 @@ def upsert_multiple_zone_readings(payload: List[dict]):
         "results": results,
     }
 
-    '''
-    if not isinstance(payload, list):
-        raise HTTPException(status_code=400, detail="Payload must be a list of zone records")
-    
-    results = []
-    for record in payload:
-
-        # Validate required fields
-        if "zone_id" not in record:
-            raise HTTPException(status_code=400, detail="Each record must include zone_id")
-        if "noisy_count" not in record:
-            raise HTTPException(status_code=400, detail="Each record must include noisy_count")
-        
-        zone_id = record["zone_id"]
-        zone_name = record.get("zone_name")
-        capacity = record.get("capacity")
-        risk_status = record.get("risk_status")
-        site_id = record.get("site_id", 1)
-
-        # 1) Validate zone exists (INSERT OR IGNORE)
-        execute(
-            """
-            INSERT OR IGNORE INTO zones (zone_id, zone_name, capacity, risk_status)
-            VALUES (?, ?, ?, ?)
-            """,
-            (
-                zone_id, 
-                zone_name or f"Zone {zone_id}", 
-                capacity if capacity is not None else 0, 
-                risk_status or 'LOW RISK'
-            )
-        )
-
-        # 2) Update metadata if provided
-        update_fields = []
-        params = []
-
-        if zone_name is not None:
-            update_fields.append("zone_name = ?")
-            params.append(zone_name)
-        if capacity is not None:
-            update_fields.append("capacity = ?")
-            params.append(capacity)
-        if risk_status is not None:
-            update_fields.append("risk_status = ?")
-            params.append(risk_status)
-
-        if update_fields:
-            params.append(zone_id)
-            execute(
-                f"UPDATE zones SET {', '.join(update_fields)} WHERE zone_id = ?",
-                tuple(params)
-            )
-
-        # 3) Insert occupancy reading data
-        execute_and_return(
-            """
-            INSERT INTO occupancy_readings (zone_id, site_id, noisy_count, confidence, zone_state, timestamp)
-            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            """,
-            (
-                zone_id,
-                site_id,
-                float(record["noisy_count"]),
-                record.get("confidence"),
-                record.get("zone_state")
-            )
-        )
-
-        results.append({"zone_id": zone_id, "status": "ok"})
-
-    return {"processed": len(results), "results": results}
-    '''
-
 # ----- PUT /zones/{zone_id} (Single) ----- #
 @router.put("/zones/{zone_id}", dependencies=[Depends(require_api_key)])
 def upsert_zone_reading(zone_id: int, payload: PrivacyZoneReadingIn):
@@ -514,60 +499,3 @@ def upsert_zone_reading(zone_id: int, payload: PrivacyZoneReadingIn):
     
     return result
 
-    '''
-    if "noisy_count" not in payload:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="noisy_count is required")
-    
-
-    zone_name = payload.get("zone_name")
-    capacity = payload.get("capacity")
-    risk_status = payload.get("risk_status")
-    site_id = payload.get("site_id", 1)
-
-    # 1) Validate zone exists (INSERT OR IGNORE)
-    execute(
-        """
-        INSERT OR IGNORE INTO zones (zone_id, zone_name, capacity, risk_status)
-        VALUES (?, ?, ?, ?)
-        """,
-        (zone_id, zone_name or f"Zone {zone_id}", capacity if capacity is not None else 0, risk_status or 'LOW RISK')
-    )
-
-    # 2) Update metadata fields if provided
-    update_fields = []
-    params = []
-
-    if zone_name is not None:
-        update_fields.append("zone_name = ?")
-        params.append(zone_name)
-    if capacity is not None:
-        update_fields.append("capacity = ?")
-        params.append(capacity)
-    if risk_status is not None:
-        update_fields.append("risk_status = ?")
-        params.append(risk_status)
-
-    if update_fields:
-        params.append(zone_id)
-        execute(
-            f"UPDATE zones SET {', '.join(update_fields)} WHERE zone_id = ?",
-            tuple(params)
-        )
-
-    # 3) Insert occupancy reading
-    execute(
-        """
-        INSERT INTO occupancy_readings (zone_id, site_id, noisy_count, confidence, zone_state, timestamp)
-        VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-        """,
-        (
-            zone_id,
-            site_id,
-            float(payload["noisy_count"]),
-            payload.get("confidence"),
-            payload.get("zone_state")
-        )
-    )
-
-    return {"status" : "ok"}
-    '''

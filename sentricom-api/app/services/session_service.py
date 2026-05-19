@@ -53,8 +53,8 @@ class SessionService:
                 return None
 
         # Python syntax here for checking null first before comparing to value (silly pthon way of doing isnull etc)
-        if rec["ip_address"] and rec["ip_address"] != ip_address:
-            return None
+        #if rec["ip_address"] and rec["ip_address"] != ip_address:
+            #return None
         
         if rec["user_agent"] and rec["user_agent"] != user_agent:
             return None
