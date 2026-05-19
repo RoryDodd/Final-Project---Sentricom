@@ -2,6 +2,11 @@
 
 # Had to move state messge definitions to shared class as used by two parts of application
 
+# ---------------------------------------------------------------------------
+# Health Output Message Model
+# ---------------------------------------------------------------------------
+
+
 from datetime import datetime, timezone
 
 STATE = {

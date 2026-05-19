@@ -5,6 +5,7 @@ export function transformZoneResults(data) {
 
   return zones.map((item, index) => ({
     id: item.zone_id || index + 1,
+    readingId: item.reading_id ?? null,
     zoneId: item.zone_id || `zone-${index + 1}`,
     zoneName: item.zone_name || item.zone || item.image || `Zone ${index + 1}`,
     count: item.dp_count ?? item.noisy_count ?? 0,

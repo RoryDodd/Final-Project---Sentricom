@@ -18,20 +18,6 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# SHOULDN'T BE REQUIRED HERE NOW
-'''
-dp_config = {
-    "mechanism": "discrete_laplace",
-    "epsilon": 0.7,
-    "delta": 1e-5
-}
-
-scenarios = ["fire",
-    #"blocked_exit",
-    #"false_alarm"
-]
-'''
-
 # ADDED: mapping from engine zones → API names
 ZONE_MAP = {
     "A": "Main Lobby",
@@ -42,7 +28,9 @@ ZONE_MAP = {
     "F": "Offices_East"
 }
 
-# Raw test data send point if required
+# ---------------------------------------------------------------------------
+# Export Block If Needed
+# ---------------------------------------------------------------------------
 def send_raw_test_summary(summary_payload):
     if not RAW_TEST_SUMMARY_URL:
         STATE["summary_status"] = "skipped"
@@ -89,6 +77,9 @@ def send_raw_test_summary(summary_payload):
             "error": str(e),
         }
 
+# ---------------------------------------------------------------------------
+# Run Scenario
+# ---------------------------------------------------------------------------
 def run_scenario(scenario_type="fire", steps=25, delay=1):
     scenario_type = scenario_type or os.getenv("DEFAULT_SCENARIO", "fire")
     

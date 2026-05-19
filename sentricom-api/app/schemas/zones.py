@@ -5,6 +5,7 @@ from typing import Optional, List
 
 class ZoneLatest(BaseModel):
     timestamp: Optional[datetime]
+    reading_id: Optional[int] = None
     zone_id: int
     zone_name: str
     dp_count: Optional[float]
@@ -51,4 +52,19 @@ class ZoneBatchWriteResponse(BaseModel):
     duplicates: int
     failed: int
     results: List[ZoneWriteResult]
+
+class ZoneUpdateItem(BaseModel):
+    reading_id: int
+    timestamp: datetime
+    zone_id: int
+    zone_name: str
+    dp_count: Optional[float] = None
+    capacity: Optional[int] = None
+    risk_status: Optional[str] = None
+    confidence: Optional[float] = None
+    zone_state: Optional[str] = None
+
+class ZoneUpdatesResponse(BaseModel):
+    items: List[ZoneUpdateItem]
+    next_cursor: int
 
