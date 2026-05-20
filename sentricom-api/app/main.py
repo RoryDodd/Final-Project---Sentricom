@@ -5,6 +5,7 @@ from app.api.v1.routes import health
 from app.api.v1.routes import zones
 from app.api.v1.routes import auth
 from app.api.v1.routes import occupancy
+from app.api.v1.routes import reports
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 load_dotenv()
@@ -43,6 +44,8 @@ app.include_router(occupancy.router, prefix="/api/v1")
 # Raw occupancy thin-slice demo bridge
 # - no prefix for now to preserve occupancy/testdata planned route
 app.include_router(occupancy.router)
+# Reports
+app.include_router(reports.router, prefix="/api/v1")
 # DEBUG
 #for r in app.routes:
     #print(f"ROUTE: {r.name} -> {r.path} [{','.join(sorted(r.methods))}]")

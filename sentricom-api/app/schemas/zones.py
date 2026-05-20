@@ -15,7 +15,8 @@ class ZoneLatest(BaseModel):
     zone_state: Optional[str]
     vuln_flag: Optional[bool] = None
 
-    model_config = {"from_attributes": True}
+    #model_config = {"from_attributes": True} #pydantic v2 style
+    class Config: orm_mode = True #Object relational mapping style for pydantic v1
 
 class PrivacyZoneReadingIn(BaseModel):
     """
