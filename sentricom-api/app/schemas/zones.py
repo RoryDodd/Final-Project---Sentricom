@@ -64,6 +64,7 @@ class ZoneUpdateItem(BaseModel):
     risk_status: Optional[str] = None
     confidence: Optional[float] = None
     zone_state: Optional[str] = None
+    vuln_flag: Optional[bool] = None
 
 class ZoneUpdatesResponse(BaseModel):
     items: List[ZoneUpdateItem]
