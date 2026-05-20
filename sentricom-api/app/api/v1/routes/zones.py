@@ -23,7 +23,7 @@ router = APIRouter()
 # TODO - likely need also active, alarm_status, priority_persons, response_code fields for each zone
 # check timestamp join logic to make sure our select aligns with latest reading for each table
 
-def _write_privacy_zone_reading(record: PrivacyZoneReadingIn) -> dict:
+def _write_privacy_zone_reading(record: PrivacyZoneReadingIn, write_vulnerable: bool = False) -> dict:
     """
     Write one privatised Priv eng zone record
 
@@ -121,7 +121,9 @@ def _write_privacy_zone_reading(record: PrivacyZoneReadingIn) -> dict:
 
     # Vulnerable flag will require logic on movement chain to identify from/to zones
     # Will need some refactoring after inital testing
-    if record.vuln_flag:
+    # Vulnerable movement will be inferred at batch level only
+    # Single record entries do not have enough context to infer vulnerable movement so vuln_flag is ignored for single record PUT endpoint for now.
+    if write_vulnerable and record.vuln_flag:
         execute(
             """
             INSERT INTO vulnerable_tracking (
@@ -147,6 +149,129 @@ def _write_privacy_zone_reading(record: PrivacyZoneReadingIn) -> dict:
         "status": "inserted",
         "detail": None,
     }
+
+# Retrieve regords that already have a vuln_flag
+def _get_previous_vulnerable_zone_ids() -> set[int]:
+    rows = fetch_all(
+        """
+        SELECT zone_id
+        FROM vulnerable_zone_state
+        WHERE vuln_flag = 1
+        """,
+        (),
+    )
+    return {int(r["zone_id"]) for r in rows}
+
+# Upsert vuln_flag record to support tracking logic with protections
+def _update_vulnerable_zone_state(records: List[PrivacyZoneReadingIn]) -> None:
+    for record in records:
+        execute(
+            """
+            INSERT INTO vulnerable_zone_state (
+                zone_id,
+                vuln_flag,
+                last_seen_at
+            )
+            VALUES (?, ?, ?)
+            ON CONFLICT(zone_id) DO UPDATE SET
+                vuln_flag = excluded.vuln_flag,
+                last_seen_at = excluded.last_seen_at
+            """,
+            (
+                record.zone_id,
+                1 if record.vuln_flag else 0,
+                record.time.isoformat(),
+            ),
+        )
+
+
+def _insert_vulnerable_movement(
+    zone_from: Optional[int],
+    zone_to: Optional[int],
+    passed_at: str,
+    estimated_count: int = 1,
+) -> None:
+    execute(
+        """
+        INSERT INTO vulnerable_tracking (
+            zone_from,
+            zone_to,
+            vulnerable_type,
+            estimated_count,
+            passed_at
+        )
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (
+            zone_from,
+            zone_to,
+            "vulnerability_flagged",
+            estimated_count,
+            passed_at,
+        ),
+    )
+
+# ----- Vulnerable Person Flag Movement Logic ----- #
+def _process_vulnerable_snapshot(records: List[PrivacyZoneReadingIn]) -> None:
+    """
+    Infers vulnerable movement flag from a full batch snapshot from Privacy Engine.
+    e.g.
+    - Only batch endpoint calls this.
+    - Single-zone PUT does not infer movement.
+    - Count not really used as originally intended ... kept for flag operation and flexibility.
+    """
+
+    if not records:
+        return
+
+    # Check previous vulnerable zone state to current batch vulnerable flags to infer movement.
+    previous_true = _get_previous_vulnerable_zone_ids()
+    current_true = {r.zone_id for r in records if r.vuln_flag}
+
+    # Get batch timestamp for movement records - use max timestamp from batch as passed_at for a boundary calculation.
+    passed_at = max(r.time for r in records).isoformat()
+
+    # Possible movement actions/cases:
+    appeared = current_true - previous_true
+    disappeared = previous_true - current_true
+    stayed = current_true & previous_true # Don't think we need anthing for this but including for completeness
+
+    # Case: no previous vulnerable flags active, new vulnerable flags appear.
+    for zone_id in appeared:
+        _insert_vulnerable_movement(
+            zone_from=None,
+            zone_to=zone_id,
+            passed_at=passed_at,
+            estimated_count=1,
+        )
+
+    # Case: Some flagged zones disappear and others remain.
+    # Presume privacy engine telling us someone has moved into an already true zone.
+    if disappeared and current_true:
+        target_zone = min(current_true)
+
+        for zone_id in disappeared:
+            _insert_vulnerable_movement(
+                zone_from=zone_id,
+                zone_to=target_zone,
+                passed_at=passed_at,
+                estimated_count=1,
+            )
+
+    # Case: All vuln flags gone and no vulnerable zones remain.
+    # Track exit from known last known zone.
+    if disappeared and not current_true:
+        for zone_id in disappeared:
+            _insert_vulnerable_movement(
+                zone_from=zone_id,
+                zone_to=None,
+                passed_at=passed_at,
+                estimated_count=1,
+            )
+
+    # Update the table
+    _update_vulnerable_zone_state(records)
+
 
 # ----- Get /zones/latest (All)----- #
 @router.get("/zones/latest", response_model=list[ZoneLatest], dependencies=[Depends(require_session)])
@@ -313,6 +438,7 @@ def upsert_multiple_zone_readings(payload: List[dict]):
     duplicates = 0
     failed = 0
     results = []
+    valid_records = []
 
     # for loop to update
     for raw_record in payload:
@@ -322,6 +448,7 @@ def upsert_multiple_zone_readings(payload: List[dict]):
             #record = PrivacyZoneReadingIn.model_validate(raw_record) #pydantic v2 only
             record = PrivacyZoneReadingIn(**raw_record) #pydantic v1 and v2
             result = _write_privacy_zone_reading(record)
+            valid_records.append(record)
 
             if result["status"] == "inserted":
                 inserted += 1
@@ -415,6 +542,17 @@ def upsert_multiple_zone_readings(payload: List[dict]):
                 "detail": str(e),
             })
 
+    # Pass the accrued moevment data for vulnerability flag processing
+    try:
+        _process_vulnerable_snapshot(valid_records)
+    except Exception as e:
+        log_pipeline_event(
+            event_type="vulnerable_snapshot_processing_failed",
+            severity="warning",
+            reason="unexpected_error",
+            validation_error=str(e),
+    )
+
     return {
         "processed": processed,
         "inserted": inserted,
@@ -424,6 +562,8 @@ def upsert_multiple_zone_readings(payload: List[dict]):
     }
 
 # ----- PUT /zones/{zone_id} (Single) ----- #
+## single PUT update will not infer vulnerable_tracking zone_from/zone_to logic, so vuln_flag is ignored in this endpoint for now. 
+## This can be added in the future with some refactoring if needed.
 @router.put("/zones/{zone_id}", dependencies=[Depends(require_api_key)])
 def upsert_zone_reading(zone_id: int, payload: PrivacyZoneReadingIn):
     """
@@ -499,3 +639,32 @@ def upsert_zone_reading(zone_id: int, payload: PrivacyZoneReadingIn):
     
     return result
 
+# ----- GET /vulnerable/movements ----- #
+@router.get("/vulnerable/movements")
+#@router.get()"/vulnerable/movements", dependencies=[Depends(require_session)])    
+def get_vulnerable_movements(after_tracking_id: int = 0, limit: int = 100):
+    safe_limit = max(1, min(limit, 1000))
+
+    rows = fetch_all(
+        """
+        SELECT
+            tracking_id,
+            zone_from,
+            zone_to,
+            vulnerable_type,
+            estimated_count,
+            passed_at
+        FROM vulnerable_tracking
+        WHERE tracking_id > ?
+        ORDER BY tracking_id ASC
+        LIMIT ?
+        """,
+        (after_tracking_id, safe_limit),
+    )
+
+    next_cursor = rows[-1]["tracking_id"] if rows else after_tracking_id
+
+    return {
+        "items": rows,
+        "next_cursor": next_cursor,
+    }

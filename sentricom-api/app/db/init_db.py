@@ -135,7 +135,17 @@ def init_db():
         );
     """)
 
-    # 10. KEY MANAGEMENT
+    # 10. VULNERABLE ZONE STATE
+    execute("""
+    CREATE TABLE IF NOT EXISTS vulnerable_zone_state (
+        zone_id INTEGER PRIMARY KEY,
+        vuln_flag TINYINT NOT NULL DEFAULT 0,
+        last_seen_at TIMESTAMP,
+        FOREIGN KEY (zone_id) REFERENCES zones(zone_id)
+    );
+    """)
+
+    # 11. KEY MANAGEMENT
     execute("""
         CREATE TABLE IF NOT EXISTS keys (
             key_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -148,7 +158,7 @@ def init_db():
         );
     """)
 
-    # 11. SESSION MANAGEMENT
+    # 12. SESSION MANAGEMENT
     execute("""
         CREATE TABLE IF NOT EXISTS sessions (
             session_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -165,7 +175,7 @@ def init_db():
         );
     """)
 
-        # 12. ZONE DATA CALL LOG
+    # 13. ZONE DATA CALL LOG
     execute("""
         CREATE TABLE IF NOT EXISTS zone_call_log (
             log_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -182,7 +192,7 @@ def init_db():
         );
     """)
 
-    # 13. LOGGING DATA - changed from master schema
+    # 14. LOGGING DATA - changed from master schema
     # originally for viewing pipeline events in UI but will be extended.
     execute("""
         CREATE TABLE IF NOT EXISTS pipeline_event_log (
