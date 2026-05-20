@@ -2,11 +2,11 @@
 export default function SummaryTable({ zones = [] }) {
   const getStatusStyle = (status) => {
     switch (status) {
-      case "LOW":
+      case "SAFE":
         return { background: "#4CAF50", color: "#fff" };
-      case "MEDIUM":
+      case "MONITOR":
         return { background: "#FFC107", color: "#000" };
-      case "HIGH":
+      case "EVACUATE":
         return { background: "#F44336", color: "#fff" };
       default:
         return { background: "#ccc", color: "#000" };
