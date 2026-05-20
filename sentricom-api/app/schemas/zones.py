@@ -13,6 +13,7 @@ class ZoneLatest(BaseModel):
     risk_status: Optional[str]
     confidence: Optional[float]
     zone_state: Optional[str]
+    vuln_flag: Optional[bool] = None
 
     model_config = {"from_attributes": True}
 

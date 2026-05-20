@@ -84,9 +84,10 @@ def _write_privacy_zone_reading(record: PrivacyZoneReadingIn, write_vulnerable: 
             noisy_count,
             confidence,
             zone_state,
+            vuln_flag,
             timestamp
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
         (
             record.zone_id,
@@ -94,6 +95,7 @@ def _write_privacy_zone_reading(record: PrivacyZoneReadingIn, write_vulnerable: 
             float(record.dp_count),
             record.confidence,
             record.zone_state,
+            1 if record.vuln_flag else 0,
             provider_timestamp,
         ),
     )
@@ -290,6 +292,7 @@ def get_all_latest_zones():
             r.noisy_count AS dp_count,
             r.confidence,
             r.zone_state,
+            r.vuln_flag,
             r.timestamp AS reading_timestamp
         FROM zones z
         LEFT JOIN occupancy_readings r
@@ -314,7 +317,8 @@ def get_all_latest_zones():
             "capacity": r.get("capacity"),
             "risk_status": r.get("risk_status"),
             "confidence": r.get("confidence"),
-            "zone_state": r.get("zone_state")
+            "zone_state": r.get("zone_state"),
+            "vuln_flag": bool(r.get("vuln_flag")) if r.get("vuln_flag") is not None else None,
         })
     return result
 
@@ -341,6 +345,7 @@ def get_zone_updates(after_reading_id: int = 0, limit: int = 100):
             r.noisy_count AS dp_count,
             r.confidence,
             r.zone_state,
+            r.vuln_flag,
             r.timestamp AS reading_timestamp
         FROM occupancy_readings r
         JOIN zones z
@@ -364,6 +369,7 @@ def get_zone_updates(after_reading_id: int = 0, limit: int = 100):
             "risk_status": r.get("risk_status"),
             "confidence": r.get("confidence"),
             "zone_state": r.get("zone_state"),
+            "vuln_flag": bool(r.get("vuln_flag")) if r.get("vuln_flag") is not None else None,
         })
 
     next_cursor = items[-1]["reading_id"] if items else after_reading_id
@@ -387,6 +393,7 @@ def get_latest_zone(zone_id: int):
             r.noisy_count AS dp_count,
             r.confidence,
             r.zone_state,
+            r.vuln_flag,
             r.timestamp AS reading_timestamp
         FROM zones z
         LEFT JOIN occupancy_readings r
@@ -413,7 +420,8 @@ def get_latest_zone(zone_id: int):
         "capacity": rec.get("capacity"),
         "risk_status": rec.get("risk_status"),
         "confidence": rec.get("confidence"),
-        "zone_state": rec.get("zone_state")
+        "zone_state": rec.get("zone_state"),
+        "vuln_flag": bool(rec.get("vuln_flag")) if rec.get("vuln_flag") is not None else None,
     }
 
 # ----- PUT /zones/latest (Batch/Bulk) ----- #
