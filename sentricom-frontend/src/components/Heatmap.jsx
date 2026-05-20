@@ -2,9 +2,9 @@
 export default function Heatmap({ zones = [] }) {
   // Get color from risk status
   const getColor = (status) => {
-    if (status === "LOW") return "#4CAF50";
-    if (status === "MEDIUM") return "#FFC107";
-    if (status === "HIGH") return "#F44336";
+    if (status === "SAFE") return "#4CAF50";
+    if (status === "MONITOR") return "#FFC107";
+    if (status === "EVACUATE") return "#F44336";
     return "#ccc";
   };
 
@@ -39,7 +39,7 @@ export default function Heatmap({ zones = [] }) {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              color: zone.status === "MEDIUM" ? "#000" : "#fff",
+              color: zone.status === "MONITOR" ? "#000" : "#fff",
               fontWeight: "bold",
               textAlign: "center",
             }}
@@ -54,13 +54,13 @@ export default function Heatmap({ zones = [] }) {
 
       <div style={{ marginTop: "15px", fontSize: "14px" }}>
         <div>
-          <span style={{ color: "#4CAF50" }}>■</span> Low
+          <span style={{ color: "#4CAF50" }}>■</span> SAFE
         </div>
         <div>
-          <span style={{ color: "#FFC107" }}>■</span> Medium
+          <span style={{ color: "#FFC107" }}>■</span> MONITOR
         </div>
         <div>
-          <span style={{ color: "#F44336" }}>■</span> High
+          <span style={{ color: "#F44336" }}>■</span> EVACUATE
         </div>
       </div>
     </div>
