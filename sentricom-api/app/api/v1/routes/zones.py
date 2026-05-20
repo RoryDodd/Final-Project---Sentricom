@@ -639,3 +639,32 @@ def upsert_zone_reading(zone_id: int, payload: PrivacyZoneReadingIn):
     
     return result
 
+# ----- GET /vulnerable/movements ----- #
+@router.get("/vulnerable/movements")
+#@router.get()"/vulnerable/movements", dependencies=[Depends(require_session)])    
+def get_vulnerable_movements(after_tracking_id: int = 0, limit: int = 100):
+    safe_limit = max(1, min(limit, 1000))
+
+    rows = fetch_all(
+        """
+        SELECT
+            tracking_id,
+            zone_from,
+            zone_to,
+            vulnerable_type,
+            estimated_count,
+            passed_at
+        FROM vulnerable_tracking
+        WHERE tracking_id > ?
+        ORDER BY tracking_id ASC
+        LIMIT ?
+        """,
+        (after_tracking_id, safe_limit),
+    )
+
+    next_cursor = rows[-1]["tracking_id"] if rows else after_tracking_id
+
+    return {
+        "items": rows,
+        "next_cursor": next_cursor,
+    }
