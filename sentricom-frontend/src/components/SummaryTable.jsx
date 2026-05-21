@@ -47,6 +47,9 @@ export default function SummaryTable({ zones = [] }) {
       Capacity
     </th>
     <th style={{ padding: "8px", borderBottom: "1px solid #ddd", textAlign: "left" }}>
+      Vulnerable
+    </th>
+    <th style={{ padding: "8px", borderBottom: "1px solid #ddd", textAlign: "left" }}>
       Status
     </th>
   </tr>
@@ -59,6 +62,7 @@ export default function SummaryTable({ zones = [] }) {
               <td style={{ padding: "8px" }}>{zone.zoneName}</td>
               <td style={{ padding: "8px" }}>{zone.count}</td>
               <td style={{ padding: "8px" }}>{zone.capacity}</td>
+              <td style={{ padding: "8px" }}>{zone.vulnFlag ? "Yes" : "No"}</td>
 
               <td style={{ padding: "8px" }}>
                 <span
