@@ -64,19 +64,40 @@ export default function GenerateReportPage() {
   setIsGenerating(true);
 
   try {
-    const params = new URLSearchParams({
-      start_date: formData.startDate,
-      end_date: formData.endDate,
-      zone_id: formData.zone,
-      report_type: formData.reportType,
+    const params = new URLSearchParams();
+
+    if (formData.startDate) {
+      params.set("from_timestamp", `${formData.startDate}T00:00:00`);
+    }
+
+    if (formData.endDate) {
+      params.set("to_timestamp", `${formData.endDate}T23:59:59`);
+    }
+
+    if (formData.zone !== "all") {
+      params.set("zone_id", formData.zone);
+    }
+
+    const data = await apiFetch(`/api/v1/reports/occupancy/history?${params}`, {
+     includeContentType: false,
     });
 
-    const data = await apiFetch(`/api/v1/reports/generate?${params}`, {
-      includeContentType: false,
+   setReport(data);
+
+    const jsonBlob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
     });
 
-    setReport(data);
-    console.log("Generated report:", data);
+    const downloadUrl = URL.createObjectURL(jsonBlob);
+    const downloadLink = document.createElement("a");
+
+    downloadLink.href = downloadUrl;
+    downloadLink.download = "occupancy-report.json";
+    downloadLink.click();
+
+    URL.revokeObjectURL(downloadUrl);
+
+      console.log("Generated report:", data);
   } catch (err) {
     console.error(err);
 
@@ -85,10 +106,10 @@ export default function GenerateReportPage() {
     } else {
       setError("Failed to generate report. Please try again.");
     }
-  } finally {
+    } finally {
     setIsGenerating(false);
-  }
-};
+      }
+    };
 
   return (
     // Page layout wrapper with heading and subtitle
@@ -158,9 +179,7 @@ export default function GenerateReportPage() {
                 onChange={handleChange}
               >
                 <option value="occupancy">Occupancy Report</option>
-                <option value="incident">Incident Report</option>
-                <option value="evacuation">Evacuation Summary</option>
-                <option value="full">Full System Report</option>
+               
               </select>
             </div>
 

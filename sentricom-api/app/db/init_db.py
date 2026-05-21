@@ -27,6 +27,7 @@ def init_db():
             noisy_count REAL NOT NULL,
             confidence REAL,
             zone_state TEXT,
+            vuln_flag TINYINT DEFAULT 0,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (zone_id) REFERENCES zones(zone_id)
         );
@@ -233,13 +234,13 @@ def init_db():
 
     # zone readings
     execute("""
-        INSERT INTO occupancy_readings (zone_id, site_id, noisy_count, confidence, zone_state, timestamp) VALUES 
-            (1, 1, 27, 0.95, 'MONITOR', datetime('now', '-5 minutes')),
-            (2, 1, 42, 0.92, 'MONITOR', datetime('now', '-5 minutes')),
-            (3, 1, 18, 0.88, 'LOW RISK', datetime('now', '-5 minutes')),
-            (4, 1, 35, 0.91, 'MONITOR', datetime('now', '-5 minutes')),
-            (5, 1, 5, 0.75, 'LOW RISK', datetime('now', '-5 minutes')),
-            (6, 1, 3, 0.70, 'LOW RISK', datetime('now', '-5 minutes'));
+        INSERT INTO occupancy_readings (zone_id, site_id, noisy_count, confidence, zone_state, vuln_flag, timestamp) VALUES 
+            (1, 1, 27, 0.95, 'MONITOR', 0, datetime('now', '-5 minutes')),
+            (2, 1, 42, 0.92, 'MONITOR', 0, datetime('now', '-5 minutes')),
+            (3, 1, 18, 0.88, 'LOW RISK', 0, datetime('now', '-5 minutes')),
+            (4, 1, 35, 0.91, 'MONITOR', 0, datetime('now', '-5 minutes')),
+            (5, 1, 5, 0.75, 'LOW RISK', 0, datetime('now', '-5 minutes')),
+            (6, 1, 3, 0.70, 'LOW RISK', 0, datetime('now', '-5 minutes'));
     """)
 
     # sample warnings
@@ -266,9 +267,9 @@ def init_db():
     # Sample vulnerable tracking data
     execute("""
         INSERT INTO vulnerable_tracking (zone_from, zone_to, vulnerable_type, estimated_count) VALUES 
-            (1, 2, 'elderly', 3),
+            (1, 2, 'elderly', 1),
             (2, 5, 'mobility_aid', 1),
-            (3, 2, 'child', 2);
+            (3, 2, 'child', 1);
     """)
 
     # admin, warden, viewer

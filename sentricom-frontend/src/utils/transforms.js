@@ -14,6 +14,7 @@ export function transformZoneResults(data) {
     status: normalizeStatus(item.risk_status || item.noisy_decision),
     confidence: item.average_confidence ?? null,
     timestamp: item.timestamp || null,
+    vulnFlag: Boolean(item.vuln_flag),
   }));
   
  function normalizeStatus(value) {

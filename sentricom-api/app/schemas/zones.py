@@ -13,8 +13,10 @@ class ZoneLatest(BaseModel):
     risk_status: Optional[str]
     confidence: Optional[float]
     zone_state: Optional[str]
+    vuln_flag: Optional[bool] = None
 
-    model_config = {"from_attributes": True}
+    #model_config = {"from_attributes": True} #pydantic v2 style
+    class Config: orm_mode = True #Object relational mapping style for pydantic v1
 
 class PrivacyZoneReadingIn(BaseModel):
     """
@@ -63,6 +65,7 @@ class ZoneUpdateItem(BaseModel):
     risk_status: Optional[str] = None
     confidence: Optional[float] = None
     zone_state: Optional[str] = None
+    vuln_flag: Optional[bool] = None
 
 class ZoneUpdatesResponse(BaseModel):
     items: List[ZoneUpdateItem]
